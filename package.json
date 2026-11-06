@@ -1,0 +1,25 @@
+{
+  "name": "cardly",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^22.12.0 || >=24.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node scripts/verify-dist.js",
+    "preview": "vite preview",
+    "verify:preview": "node scripts/verify-preview.js",
+    "test:ui": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.56.1",
+    "vite": "^8.3.6"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.2"
+  }
+}
