@@ -7,6 +7,7 @@ const pagesRoot = fileURLToPath(new URL('./pages/', import.meta.url));
 
 export default defineConfig({
   root: pagesRoot,
+  publicDir: fileURLToPath(new URL('./public/', import.meta.url)),
   envDir: projectRoot,
   appType: 'mpa',
   resolve: {

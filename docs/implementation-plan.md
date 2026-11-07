@@ -186,6 +186,30 @@ the service-only completion API. No renderer, AI, payments or user-photo pipelin
 is implemented. Image field configuration/values are rejected until trusted upload
 validation exists. The frontend continues using samples. See docs/generation-api.md.
 
+## Milestone 2B — Fictional seed collection and connected previews (completed)
+
+Authorized by the seed/browsing/personalization request. Applied migrations
+`20261107152507_catalog_browsing_filters` and `20261107152510_fictional_demo_catalog`.
+Implemented 12 fictional designs (10 published, one draft, one archived), six
+categories, four occasions, differing field schemas, original local SVG artwork,
+server-side search/pricing filters and distinct live SVG compositions. Connected
+public browsing/detail/editor and owned draft/generation views, plus password
+login/logout. Demo account seed provisions two users and one explicitly assigned
+admin with private examples and no shared passwords. See docs/demo-collection.md.
+
+Generation remains a labelled processing job with snapshots, not an image export.
+No photo pipeline, AI, payments, registration UI or admin UI is introduced. Local
+demo previews are static application assets; private outputs remain in Storage.
+Interactive demo login requires trusted password configuration documented in the
+guide. Later milestones below retain work outside this explicit request.
+
+Verification: the production build and route/asset checks pass for all 17 entries.
+Thirteen Chrome tests pass, including the live public Supabase smoke test and
+automated accessibility checks. Desktop/mobile catalog and editor screenshots
+were reviewed. Authorization, workflow and actual demo ownership SQL checks pass.
+Local SQL checksums match remote migration history. Demo password login remains
+untested until an operator configures the unset passwords.
+
 ## Milestone 3 — Public catalog
 
 Implement browsing, keyword search, category/occasion filters, preview images,

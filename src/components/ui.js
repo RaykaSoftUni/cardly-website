@@ -7,7 +7,7 @@ export function icon(name) {
 export function button({ label, variant = 'primary', href, onClick, disabled = false, type = 'button', iconName } = {}) {
   const content = [iconName && icon(iconName), el('span', {}, label)];
   const className = `btn btn-${variant}`;
-  if (href && !disabled && safeUrl(href)) return el('a', { className, href: safeUrl(href) }, content);
+  if (href && !disabled && safeUrl(href)) return el('a', { className, href: safeUrl(href), onClick }, content);
   return el('button', { className, type, disabled, onClick }, content);
 }
 

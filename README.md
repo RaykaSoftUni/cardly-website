@@ -2,10 +2,11 @@
 
 Repository: [RaykaSoftUni/cardly-website](https://github.com/RaykaSoftUni/cardly-website).
 
-Multi-page greeting card application foundation. The 17 pages currently contain
-a shared design system with clearly labelled sample cards, local filters and a
-live sample text editor. Authentication, persistence, AI, uploads, payments, exports,
-sharing, and administrator operations are not connected. See
+Multi-page greeting card application with a fictional Supabase-backed catalog,
+server-side filters, distinct SVG designs, per-card personalization previews,
+password sign-in, owned drafts and generation placeholders. AI, photo uploads,
+payments, final image exports, sharing, registration UI and admin UI remain
+unconnected. The 17 HTML entries retain shared components. See
 [the design system guide](docs/design-system.md) for component interfaces.
 
 ## Requirements and setup
@@ -25,12 +26,13 @@ project's URL and modern `sb_publishable_` key. Restart Vite after changes. Thes
 values are public browser configuration; never use secret keys, service_role keys
 or database passwords. Missing configuration throws a clear error when the client
 is imported. Import `{ supabaseClient }` from `src/services/supabase-client.js` in
-future data services. Sample pages do not yet import it or perform backend calls.
+data services. Public catalog, detail, editor, login and saved-card pages now use it.
 See [the access model](docs/access-model.md) for the inspected project reference,
 migration state and authorization rules. The database foundation is applied:
 12 application tables with RLS and two private Storage buckets. See
 [database operations](docs/database.md) for permissions, admin provisioning and
-rollback-only SQL verification. Frontend pages still use sample data.
+rollback-only SQL verification. See [the demo collection guide](docs/demo-collection.md)
+for seeded accounts, password setup and local artwork.
 The [generation API](docs/generation-api.md) documents public catalogue/detail,
 validated private drafts, transactional generation jobs and admin RPCs. Rendering
 jobs require a trusted worker; no image renderer is deployed by the SQL workflow.

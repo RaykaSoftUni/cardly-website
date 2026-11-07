@@ -1,11 +1,12 @@
 import { el, uniqueId } from '../../utils/dom.js';
 import { button } from '../ui.js';
 
-export function createField({ name, label, type = 'text', required = false, hint, options, value = '', min, max, maxLength = 500, accept } = {}) {
+export function createField({ name, label, type = 'text', required = false, hint, options, value = '', min, max, minLength, maxLength = 500, accept } = {}) {
   const id = uniqueId(name);
   const input = el(options ? 'select' : type === 'textarea' ? 'textarea' : 'input', {
     id, name, className: options ? 'form-select' : 'form-control', type: options || type === 'textarea' ? null : type,
     required, min, max, maxlength: ['text', 'textarea', 'email'].includes(type) ? maxLength : null,
+    minlength: minLength,
     rows: type === 'textarea' ? 4 : null, accept,
     'aria-describedby': `${id}-hint ${id}-error`,
   });
@@ -44,16 +45,19 @@ export function createForm({ fields, submitLabel = 'Update preview', onSubmit, o
   form.append(submit);
   form.addEventListener('input', () => onChange?.(values()));
   form.addEventListener('change', () => onChange?.(values()));
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (!onSubmit) return;
+  const validate = () => {
     const invalid = controls.filter((field) => !field.validate());
     summary.hidden = !invalid.length;
     if (invalid.length) {
       summary.textContent = `Please check ${invalid.length} ${invalid.length === 1 ? 'field' : 'fields'} below.`;
       invalid[0].input.focus();
-      return;
     }
+    return !invalid.length;
+  };
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!onSubmit) return;
+    if (!validate()) return;
     submit.disabled = true;
     form.setAttribute('aria-busy', 'true');
     try { await onSubmit(values()); }
@@ -61,7 +65,7 @@ export function createForm({ fields, submitLabel = 'Update preview', onSubmit, o
     finally { submit.disabled = false; form.removeAttribute('aria-busy'); }
   });
   return {
-    element: form, values,
+    element: form, values, validate,
     setErrors(errors) { for (const control of controls) control.setError(errors[control.name]); },
     reset() { form.reset(); for (const control of controls) control.setError(); summary.hidden = true; onChange?.(values()); },
   };

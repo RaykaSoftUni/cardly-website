@@ -33,9 +33,9 @@ insert into storage.objects(bucket_id,name) values ('card-assets','__workflow/pr
 set local role anon;
 select set_config('request.jwt.claim.sub','',true);
 select set_config('request.jwt.claims','{"role":"anon"}',true);
-select pg_temp.ok(jsonb_array_length(public.get_card_catalogue())=2,'public catalogue publication');
+select pg_temp.ok((select count(*)=2 from jsonb_array_elements(public.get_card_catalogue()) c where c->>'id' in (select id::text from test_ids where key in ('card','paid'))),'public catalogue publication');
 select pg_temp.ok(jsonb_array_length(public.get_card_catalogue(p_style=>'minimal'))=1,'style filter');
-select pg_temp.ok(jsonb_array_length(public.get_card_catalogue(p_available=>false))=1,'availability filter');
+select pg_temp.ok(jsonb_array_length(public.get_card_catalogue(p_available=>false,p_search=>'Paid'))=1,'availability filter');
 select pg_temp.ok(jsonb_array_length(public.get_card_catalogue(p_occasion=>(select id from test_ids where key='occasion')))=1,'occasion filter');
 select pg_temp.ok(jsonb_array_length(public.get_card_catalogue(p_category=>(select id from test_ids where key='category')))=1,'category filter');
 select pg_temp.ok(public.get_card_detail((select id from test_ids where key='draft_card')) is null,'hidden detail');

@@ -1,0 +1,661 @@
+[
+  {
+    "slug": "birthday-type",
+    "title": "A very happy birthday",
+    "occasion": "Birthday",
+    "category": "Minimal",
+    "style": "Typography",
+    "paid": false,
+    "price": 0,
+    "available": true,
+    "status": "published",
+    "designKey": "birthday-type",
+    "description": "A very happy birthday: a fictional typography birthday design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "main_headline",
+        "label": "Main headline",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 80
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 0
+  },
+  {
+    "slug": "space-explorer",
+    "title": "Tiny space explorer",
+    "occasion": "Birthday",
+    "category": "Kids",
+    "style": "Illustrated",
+    "paid": false,
+    "price": 0,
+    "available": true,
+    "status": "published",
+    "designKey": "space-explorer",
+    "description": "Tiny space explorer: a fictional illustrated birthday design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "recipient_age",
+        "label": "Age",
+        "type": "number",
+        "required": false,
+        "config": {
+          "min": 1,
+          "max": 120
+        }
+      },
+      {
+        "key": "interests",
+        "label": "Favourite adventures",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 160
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 1
+  },
+  {
+    "slug": "wild-confetti",
+    "title": "The wild confetti club",
+    "occasion": "Birthday",
+    "category": "Playful",
+    "style": "Playful",
+    "paid": false,
+    "price": 0,
+    "available": true,
+    "status": "published",
+    "designKey": "wild-confetti",
+    "description": "The wild confetti club: a fictional playful birthday design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "recipient_age",
+        "label": "Age",
+        "type": "number",
+        "required": false,
+        "config": {
+          "min": 1,
+          "max": 120
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 2
+  },
+  {
+    "slug": "botanical-wishes",
+    "title": "A beautiful new chapter",
+    "occasion": "Birthday",
+    "category": "Elegant",
+    "style": "Botanical",
+    "paid": true,
+    "price": 4.5,
+    "available": false,
+    "status": "published",
+    "designKey": "botanical-wishes",
+    "description": "A beautiful new chapter: a fictional botanical birthday design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "relationship",
+        "label": "Relationship",
+        "type": "select",
+        "required": false,
+        "config": {
+          "options": [
+            "Friend",
+            "Parent",
+            "Partner",
+            "Colleague"
+          ]
+        }
+      },
+      {
+        "key": "tone",
+        "label": "Message tone",
+        "type": "select",
+        "required": false,
+        "config": {
+          "options": [
+            "Warm",
+            "Heartfelt",
+            "Simple"
+          ]
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 3
+  },
+  {
+    "slug": "older-wiser",
+    "title": "Older, wiser, allegedly",
+    "occasion": "Birthday",
+    "category": "Funny",
+    "style": "Bold",
+    "paid": false,
+    "price": 0,
+    "available": true,
+    "status": "published",
+    "designKey": "older-wiser",
+    "description": "Older, wiser, allegedly: a fictional bold birthday design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "recipient_age",
+        "label": "Age",
+        "type": "number",
+        "required": false,
+        "config": {
+          "min": 1,
+          "max": 120
+        }
+      },
+      {
+        "key": "humour_style",
+        "label": "Humour style",
+        "type": "select",
+        "required": false,
+        "config": {
+          "options": [
+            "Gentle",
+            "Cheeky",
+            "Dry"
+          ]
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 4
+  },
+  {
+    "slug": "little-thanks",
+    "title": "A thousand little thanks",
+    "occasion": "Thank You",
+    "category": "Elegant",
+    "style": "Framed",
+    "paid": false,
+    "price": 0,
+    "available": false,
+    "status": "published",
+    "designKey": "little-thanks",
+    "description": "A thousand little thanks: a fictional framed thank you design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 5
+  },
+  {
+    "slug": "big-congratulations",
+    "title": "The good news edition",
+    "occasion": "Congratulations",
+    "category": "Modern",
+    "style": "Editorial",
+    "paid": false,
+    "price": 0,
+    "available": true,
+    "status": "published",
+    "designKey": "big-congratulations",
+    "description": "The good news edition: a fictional editorial congratulations design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "main_headline",
+        "label": "Main headline",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 80
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 6
+  },
+  {
+    "slug": "sunshine-split",
+    "title": "You are pure sunshine",
+    "occasion": "Thank You",
+    "category": "Minimal",
+    "style": "Split",
+    "paid": true,
+    "price": 3.2,
+    "available": false,
+    "status": "published",
+    "designKey": "sunshine-split",
+    "description": "You are pure sunshine: a fictional split thank you design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 7
+  },
+  {
+    "slug": "memory-window",
+    "title": "The memories ahead",
+    "occasion": "Anniversary",
+    "category": "Modern",
+    "style": "Landscape",
+    "paid": true,
+    "price": 4.8,
+    "available": false,
+    "status": "published",
+    "designKey": "memory-window",
+    "description": "The memories ahead: a fictional landscape anniversary design with its own composition and editable words. Includes original demo landscape artwork; photo uploads are not supported.",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 8
+  },
+  {
+    "slug": "paper-party",
+    "title": "A brilliant thing",
+    "occasion": "Congratulations",
+    "category": "Playful",
+    "style": "Collage",
+    "paid": false,
+    "price": 0,
+    "available": true,
+    "status": "published",
+    "designKey": "paper-party",
+    "description": "A brilliant thing: a fictional collage congratulations design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "main_headline",
+        "label": "Main headline",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 80
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 9
+  },
+  {
+    "slug": "draft-confetti",
+    "title": "Confetti laboratory",
+    "occasion": "Birthday",
+    "category": "Kids",
+    "style": "Playful",
+    "paid": false,
+    "price": 0,
+    "available": true,
+    "status": "draft",
+    "designKey": "wild-confetti",
+    "description": "Confetti laboratory: a fictional playful birthday design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "recipient_age",
+        "label": "Age",
+        "type": "number",
+        "required": false,
+        "config": {
+          "min": 1,
+          "max": 120
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 10
+  },
+  {
+    "slug": "archived-botanical",
+    "title": "The retired garden",
+    "occasion": "Birthday",
+    "category": "Elegant",
+    "style": "Botanical",
+    "paid": false,
+    "price": 0,
+    "available": false,
+    "status": "archived",
+    "designKey": "botanical-wishes",
+    "description": "The retired garden: a fictional botanical birthday design with its own composition and editable words. ",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "relationship",
+        "label": "Relationship",
+        "type": "select",
+        "required": false,
+        "config": {
+          "options": [
+            "Friend",
+            "Parent",
+            "Partner",
+            "Colleague"
+          ]
+        }
+      },
+      {
+        "key": "tone",
+        "label": "Message tone",
+        "type": "select",
+        "required": false,
+        "config": {
+          "options": [
+            "Warm",
+            "Heartfelt",
+            "Simple"
+          ]
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 11
+  }
+]

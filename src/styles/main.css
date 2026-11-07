@@ -215,3 +215,13 @@ fieldset legend { font-size: var(--text-base); font-weight: 650; }
 }
 
 .greeting-preview, .preview-panel { min-width: 0; width: 100%; }
+
+/* Demo artwork uses real, distinct 3:4 compositions at every preview size. */
+.design-art { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: contain; border-radius: var(--radius-lg, 20px); }
+.design-preview { width: 100%; min-width: 0; overflow: hidden; }
+.catalog-card > a { display: block; overflow: hidden; }
+.editor-layout > .design-art { align-self: start; }
+.catalog-filters { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); }
+.editor-layout .btn + .btn { margin: .5rem; }
+.catalog-card-body h2 a { color: var(--text, #302936); text-decoration: none; }
+.catalog-card-body h2 a:hover { text-decoration: underline; }

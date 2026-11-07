@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { pages } from '../src/pages/entries.js';
+import { mockCatalog, demoCards } from './helpers/demo-catalog.js';
+test.beforeEach(async ({page}) => mockCatalog(page));
 
 test('all page shells render without errors, hidden admin links, or mobile overflow', async ({ page }) => {
   const errors = [];
@@ -39,50 +41,57 @@ test('public navigation and keyboard-operated mobile menu use document navigatio
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Find their kind of card.');
 });
 
-test('sample catalogue filters and unavailable paid cards communicate their state', async ({ page }) => {
-  await page.goto('/cards/');
-  await expect(page.locator('.catalog-card')).toHaveCount(6);
-  await page.getByLabel('Occasion', { exact: false }).selectOption('Birthday');
-  await expect(page.locator('.catalog-card')).toHaveCount(3);
-  await page.getByLabel('Style', { exact: false }).selectOption('Minimal');
-  await expect(page.locator('.catalog-card')).toHaveCount(1);
-  await expect(page.locator('.catalog-card')).toContainText('€3.50');
-  await expect(page.locator('.catalog-card')).toContainText('Currently unavailable');
-  await expect(page.getByRole('button', { name: 'Personalization unavailable' })).toBeDisabled();
-  await page.getByLabel('Search sample cards').fill('no matching card');
-  await expect(page.getByRole('heading', { name: 'No matching sample cards' })).toBeVisible();
+test('catalogue filters preserve state, show EUR prices and an empty state', async ({page})=>{
+ await page.goto('/cards/');
+ await expect(page.locator('.catalog-card')).toHaveCount(10);
+ await page.getByLabel('Free or paid').selectOption('paid');
+ await expect(page.locator('.catalog-card')).toHaveCount(3);
+ await expect(page.locator('.catalog-card').first()).toContainText('€4.50');
+ await expect(page.locator('.catalog-card').first()).toContainText('Currently unavailable');
+ await page.getByRole('link',{name:'A beautiful new chapter',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Currently unavailable'})).toBeDisabled();
+ await page.getByRole('link',{name:'← Back to your cards'}).click();
+ await expect(page.getByLabel('Free or paid')).toHaveValue('paid');
+ await expect(page.locator('.catalog-card')).toHaveCount(3);
+ await page.getByLabel('Search cards').fill('no matching card');
+ await expect(page.getByRole('heading',{name:'No matching cards'})).toBeVisible();
 });
 
-test('personalization validates, renders text safely, announces updates and restores dialog focus', async ({ page }) => {
-  await page.goto('/card-editor/?id=sample-lilac');
-  await page.getByRole('button', { name: 'Update preview' }).click();
-  const recipient = page.getByLabel('Recipient name');
-  await expect(recipient).toHaveAttribute('aria-invalid', 'true');
-  await expect(recipient).toBeFocused();
-  await recipient.fill('<img src=x onerror=alert(1)>');
-  await page.getByLabel('Custom message').fill('A thoughtful little message.');
-  await expect(page.locator('.greeting-message')).toHaveText('A thoughtful little message.');
-  await expect(page.locator('.greeting-recipient')).toContainText('<img src=x onerror=alert(1)>');
-  await expect(page.locator('.greeting-content img')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Update preview' }).click();
-  await expect(page.locator('#toast-container [role="status"]')).toContainText('Nothing has been saved');
-  const reset = page.getByRole('button', { name: 'Reset sample form' });
-  await reset.click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Cancel' })).toBeFocused();
-  await page.keyboard.press('Tab');
-  await page.keyboard.press('Tab');
-  expect(await dialog.evaluate((node) => node.contains(document.activeElement))).toBe(true);
-  await page.keyboard.press('Escape');
-  await expect(dialog).toHaveCount(0);
-  await expect(reset).toBeFocused();
-  await expect(recipient).not.toHaveValue('');
-  await reset.click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Reset form', exact: true }).click();
-  await expect(recipient).toHaveValue('');
-  await expect(reset).toBeFocused();
-  await expect(page.locator('body > #toast-container')).toHaveCount(1);
+test('per-card personalization validates safely and retains input across errors',async({page})=>{
+ await page.goto('/card-editor/?id='+demoCards[1].id);
+ await page.getByRole('button',{name:'Validate demo preview'}).click();
+ const recipient=page.getByLabel('Recipient name');
+ await expect(recipient).toHaveAttribute('aria-invalid','true');
+ await recipient.fill('<img src=x onerror=alert(1)>');
+ await page.getByLabel('Your message').fill('A thoughtful little message.');
+ await expect(page.getByRole('spinbutton',{name:'Age Optional'})).toBeVisible();
+ await expect(page.getByLabel('Favourite adventures')).toBeVisible();
+ await page.getByRole('button',{name:'Validate demo preview'}).click();
+ await expect(page.locator('main')).toContainText('Demo preview validated.');
+ const svg=await page.locator('.design-preview img').getAttribute('src');
+ expect(decodeURIComponent(svg)).toContain('&lt;img');
+ await expect(page.locator('.design-preview script')).toHaveCount(0);
+ await page.getByRole('button',{name:'Save my draft'}).click();
+ await expect(page.locator('main')).toContainText('Sign in to save.');
+ await expect(recipient).toHaveValue('<img src=x onerror=alert(1)>');
+ await page.reload();
+ await expect(recipient).toHaveValue('<img src=x onerror=alert(1)>');
+ await page.goto('/card-editor/?id='+demoCards[4].id);
+ await expect(page.getByLabel('Humour style')).toBeVisible();
+ await expect(page.getByLabel('Favourite adventures')).toHaveCount(0);
+});
+
+test('missing artwork falls back to its own design and long text stays responsive',async({page})=>{
+ await page.route('**/demo-cards/*',route=>route.abort());
+ await page.goto('/cards/');
+ await expect(page.locator('.catalog-card')).toHaveCount(10);
+ await page.locator('.catalog-card img').evaluateAll(images=>images.forEach(image=>image.loading='eager'));
+ await expect(page.locator('.catalog-card .design-preview')).toHaveCount(10);
+ await page.goto('/card-editor/?id='+demoCards[0].id);
+ await page.setViewportSize({width:375,height:850});
+ await page.getByLabel('Recipient name').fill('A'.repeat(60));
+ await page.getByLabel('Your message').fill('A long thoughtful message. '.repeat(8));
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
 
 for (const route of ['/', '/cards/', '/card-editor/', '/login/', '/admin/card-edit/', '/admin/cards/']) {
