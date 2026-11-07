@@ -28,9 +28,12 @@ is imported. Import `{ supabaseClient }` from `src/services/supabase-client.js` 
 future data services. Sample pages do not yet import it or perform backend calls.
 See [the access model](docs/access-model.md) for the inspected project reference,
 migration state and authorization rules. The database foundation is applied:
-11 application tables with RLS and two private Storage buckets. See
+12 application tables with RLS and two private Storage buckets. See
 [database operations](docs/database.md) for permissions, admin provisioning and
 rollback-only SQL verification. Frontend pages still use sample data.
+The [generation API](docs/generation-api.md) documents public catalogue/detail,
+validated private drafts, transactional generation jobs and admin RPCs. Rendering
+jobs require a trusted worker; no image renderer is deployed by the SQL workflow.
 
 ## Production verification
 
@@ -65,6 +68,8 @@ Committed SQL migrations are in `supabase/migrations/`.
 - `supabase/migrations/` is reserved for committed database migrations.
 - `supabase/tests/authorization.sql` verifies database and Storage authorization
   with transactional fixtures that roll back.
+- `supabase/tests/workflow.sql` verifies public projections, personalization,
+  version snapshots, generation state transitions and admin operations.
 - `scripts/` contains build and production preview verification.
 - `docs/implementation-plan.md` describes milestones and the complete page list.
 

@@ -163,6 +163,29 @@ Completion: verify anonymous, owner, other-user, and administrator permissions,
 including direct database/storage requests and invalid card states. Migration
 files and any applied remote history agree.
 
+## Milestone 2A — Server-side personalization and generation (completed)
+
+The explicit backend workflow request authorized database RPCs for public catalog
+and detail projections, price quotes, owned draft create/update/archive/delete,
+generation jobs, owned retrieval, favorites and admin catalog changes. Applied
+`20261107144909_personalization_generation_workflow`; local SQL matches the remote
+history. Added immutable template versions, automatic version increments and
+card/template snapshots, strict field validation and locked eligibility checks.
+Direct client writes cannot bypass draft/favorite validation. Internal templates
+and field records are admin-only; public RPCs return safe projections.
+
+Verification: rollback-only authorization and workflow suites pass against the
+remote database, including role boundaries, changed eligibility/configuration,
+snapshot preservation and worker success/failure. All 17 frontend entries build.
+Security advisor notices for deliberately callable definer RPCs are documented
+with their controls in docs/generation-api.md; unused indexes are informational.
+
+This completes the SQL workflow, not the later UI or rendering features. Generation
+creates processing jobs; a trusted renderer must upload actual images and invoke
+the service-only completion API. No renderer, AI, payments or user-photo pipeline
+is implemented. Image field configuration/values are rejected until trusted upload
+validation exists. The frontend continues using samples. See docs/generation-api.md.
+
 ## Milestone 3 — Public catalog
 
 Implement browsing, keyword search, category/occasion filters, preview images,

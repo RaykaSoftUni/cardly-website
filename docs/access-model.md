@@ -4,6 +4,9 @@ This document defines the role model and its database enforcement. The schema,
 RLS and Storage foundation are implemented; frontend product workflows still
 require their own milestones. See [database operations](database.md) for the exact
 permissions, migration history, verification and administrator provisioning.
+The [generation API](generation-api.md) now implements validated RPCs and immutable
+template history. Public catalog access uses safe RPC projections; internal
+template/field tables are admin-only. Draft/favorite writes must use the RPCs.
 
 ## Project inspection
 

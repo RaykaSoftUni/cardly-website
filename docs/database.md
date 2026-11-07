@@ -1,5 +1,11 @@
 # Database and Storage foundation
 
+The foundation below records milestone 2. The subsequent
+[generation API](generation-api.md) adds a third migration, immutable template
+history (a twelfth RLS-protected table), RPC-only public projections and validated
+draft/favorite writes. Its access contract supersedes the direct catalog read and
+draft-write permissions described in the original foundation below.
+
 Applied to Supabase reference `netqiilhvhvmwhefsmxq` on 2026-11-07 through the
 configured Supabase MCP. Preflight inspection found no application tables or remote
 migrations. The committed migration versions were taken from the remote history
@@ -39,7 +45,8 @@ on drafts/generated cards is rejected, including through privileged writes.
 Creating generated records requires a usable free template; a source draft must
 belong to the same user and card. Deleting a source draft preserves generated
 records with a null source reference. Retaining template versions for reopening
-historical exports needs additional design in the export milestone.
+historical exports is now implemented by the generation API's version history and
+snapshots; actual image rendering remains a separate trusted worker.
 
 ## Enforced access
 
@@ -102,7 +109,7 @@ database role row rather than user-editable metadata.
 
 ## Verification
 
-Run `supabase/tests/authorization.sql` as a trusted database operator through SQL
+Run `supabase/tests/authorization.sql` and `supabase/tests/workflow.sql` as a trusted database operator through SQL
 Editor or MCP `execute_sql`. It simulates `anon` and `authenticated` database roles
 with user claims and uses exceptions to assert expected failures. It creates only
 transactional fixtures and ends with `ROLLBACK`; a failure must abort/roll back the
