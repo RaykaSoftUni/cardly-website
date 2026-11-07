@@ -128,7 +128,22 @@ routes, explicit HTML URLs, query strings, 21 assets and 404 behavior. Direct cl
 module checks pass for configuration, shared-instance identity, missing-variable
 errors and rejection of non-publishable keys. No database writes were performed.
 
-## Milestone 2 — Supabase schema and authorization
+## Milestone 2 — Supabase schema and authorization (completed)
+
+The explicit schema request authorized 11 application tables, RLS, indexes,
+constraints, provisioning/update triggers and the two Storage buckets. Applied
+remote migrations `20261107135537_catalog_authorization` and
+`20261107135932_catalog_read_policies`; committed SQL matches remote versions.
+See docs/database.md for exact permissions, provisioning and operational limits.
+Optional AI logging is deferred; no frontend authentication, catalog integration,
+favorites UI, PDF generation or payment functionality was implemented.
+
+Verification: rollback-only direct database tests pass for anonymous, owner,
+other-user and administrator permissions, Storage object access, ownership and
+catalog integrity. All 11 tables have RLS enabled and both buckets are private.
+All 17 HTML entries build. Security advisor has no findings; overlapping-policy
+warnings were resolved, leaving informational unused-index notices on empty tables.
+Real file-transfer and frontend authentication tests belong to their later features.
 
 Define committed SQL migrations for profiles/roles, card templates, categories,
 occasions, catalog cards, and user-owned card drafts/generated records. Model

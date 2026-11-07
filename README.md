@@ -27,7 +27,10 @@ or database passwords. Missing configuration throws a clear error when the clien
 is imported. Import `{ supabaseClient }` from `src/services/supabase-client.js` in
 future data services. Sample pages do not yet import it or perform backend calls.
 See [the access model](docs/access-model.md) for the inspected project reference,
-migration state and planned authorization rules. No tables or policies were created.
+migration state and authorization rules. The database foundation is applied:
+11 application tables with RLS and two private Storage buckets. See
+[database operations](docs/database.md) for permissions, admin provisioning and
+rollback-only SQL verification. Frontend pages still use sample data.
 
 ## Production verification
 
@@ -46,7 +49,7 @@ These are HTTP checks; they do not replace browser accessibility or visual revie
 
 `preview` serves the production build for manual review. Open `/admin/cards/`,
 `/admin/card-edit/?id=123`, and the other links to review nested navigation.
-The migration directory is reserved for a later milestone.
+Committed SQL migrations are in `supabase/migrations/`.
 
 ## Structure
 
@@ -60,6 +63,8 @@ The migration directory is reserved for a later milestone.
 - `src/services/` contains the shared Supabase client; `src/utils/` contains
   safe DOM helpers.
 - `supabase/migrations/` is reserved for committed database migrations.
+- `supabase/tests/authorization.sql` verifies database and Storage authorization
+  with transactional fixtures that roll back.
 - `scripts/` contains build and production preview verification.
 - `docs/implementation-plan.md` describes milestones and the complete page list.
 

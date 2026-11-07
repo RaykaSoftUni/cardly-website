@@ -1,8 +1,9 @@
 # Access model
 
-This document defines the intended authorization model, not implemented policies.
-No tables, migrations, roles, or Storage policies were created in this milestone.
-Future features require their own authorization implementation and verification.
+This document defines the role model and its database enforcement. The schema,
+RLS and Storage foundation are implemented; frontend product workflows still
+require their own milestones. See [database operations](database.md) for the exact
+permissions, migration history, verification and administrator provisioning.
 
 ## Project inspection
 
@@ -17,6 +18,11 @@ On 2026-11-07 the configured Supabase MCP returned:
 The requested project name is `cardly-website`. The configured MCP exposes the
 project URL but no project-name lookup; the display name could not be independently
 confirmed. No schema or migration history has been fabricated or modified.
+
+The empty-project inspection above records the connection milestone's starting
+state. The subsequent schema milestone applied `20261107135537_catalog_authorization`
+and `20261107135932_catalog_read_policies`, creating 11 RLS-protected application
+tables and two private Storage buckets. Local SQL matches remote history.
 
 ## Visitor
 
@@ -57,9 +63,9 @@ administrative role. Admins have user permissions where applicable and may:
 - Review generated-card records when required for administration.
 - Perform supported user administration and access data necessary for support.
 
-These capabilities are requirements for later milestones, not unrestricted
-frontend database access. Scope sensitive record access to an administrative need;
-protect privileged user administration through trusted server operations.
+Catalog administration is enforced by RLS. User administration and review of
+private records require trusted server operations and are not granted to admin
+browser clients. Scope sensitive record access to an administrative need.
 
 ## Database enforcement
 
