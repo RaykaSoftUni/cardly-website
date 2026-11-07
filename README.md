@@ -19,9 +19,15 @@ npm run dev
 ```
 
 Open the local URL printed by Vite. No environment variables are required for
-placeholders. `.env.example` documents future public Supabase configuration;
-copy it to `.env.local` when configuring the backend. Never add privileged keys
-to browser configuration.
+placeholders. To use the shared Supabase client, copy `.env.example` to `.env.local`
+and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` using the intended
+project's URL and modern `sb_publishable_` key. Restart Vite after changes. These
+values are public browser configuration; never use secret keys, service_role keys
+or database passwords. Missing configuration throws a clear error when the client
+is imported. Import `{ supabaseClient }` from `src/services/supabase-client.js` in
+future data services. Sample pages do not yet import it or perform backend calls.
+See [the access model](docs/access-model.md) for the inspected project reference,
+migration state and planned authorization rules. No tables or policies were created.
 
 ## Production verification
 
@@ -40,7 +46,7 @@ These are HTTP checks; they do not replace browser accessibility or visual revie
 
 `preview` serves the production build for manual review. Open `/admin/cards/`,
 `/admin/card-edit/?id=123`, and the other links to review nested navigation.
-The empty directories for services and migrations are reserved for later milestones.
+The migration directory is reserved for a later milestone.
 
 ## Structure
 
@@ -51,7 +57,7 @@ The empty directories for services and migrations are reserved for later milesto
 - `src/pages/` contains one module per page and a shared entry manifest.
 - `src/components/` contains modular layouts, cards, forms and feedback components.
 - `src/styles/` contains shared styles, alongside Bootstrap's imported CSS.
-- `src/services/` is reserved for future integration code; `src/utils/` contains
+- `src/services/` contains the shared Supabase client; `src/utils/` contains
   safe DOM helpers.
 - `supabase/migrations/` is reserved for committed database migrations.
 - `scripts/` contains build and production preview verification.

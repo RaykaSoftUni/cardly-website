@@ -112,6 +112,22 @@ Repository setup: the workspace is now initialized on the initial-setup branch
 with origin at https://github.com/RaykaSoftUni/cardly-website.git. Earlier notes
 about Git being unavailable describe the state at those milestones.
 
+## Milestone 1D — Supabase connection and access model (completed)
+
+Authorized scope: inspect the configured Supabase project, add the shared client
+using public Vite configuration, and document Visitor/User/Admin access in
+docs/access-model.md. The MCP reports reference `netqiilhvhvmwhefsmxq`, no
+application tables and no migrations. Local migration history is empty. The
+project display name is not exposed by the configured MCP tools.
+
+No schema, policies, authentication screens or application data workflows are
+implemented here. Milestone 2 remains a separate authorization step.
+
+Verification: all 17 production entries build; production preview checks pass for
+routes, explicit HTML URLs, query strings, 21 assets and 404 behavior. Direct client
+module checks pass for configuration, shared-instance identity, missing-variable
+errors and rejection of non-publishable keys. No database writes were performed.
+
 ## Milestone 2 — Supabase schema and authorization
 
 Define committed SQL migrations for profiles/roles, card templates, categories,
