@@ -107,6 +107,8 @@ to public URLs: `/`, `/cards/`, and `/admin/cards/` still load directly.
 Page styles load directly through each HTML entry's `src/styles/entry.css` link,
 so the branded shell is styled before page JavaScript arrives. Accessible loading
 skeletons keep the header and page geometry stable while sessions/data resolve.
+Shared page content has 10px of top padding below the header, including admin
+navigation and back links.
 Navigation appears after the session/role check, and catalog/admin views are
 assembled before they replace the loading state. Scrollbar space is reserved to
 avoid sideways shifts between short and long pages. Reduced-motion preferences
