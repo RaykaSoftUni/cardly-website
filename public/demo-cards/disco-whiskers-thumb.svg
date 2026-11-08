@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 600 800" role="img" aria-label="Birthday on repeat." data-animation-run="0"><rect width="600" height="800" fill="#e9e1ff"/><g color="#30244c"><style>
+@media (prefers-reduced-motion: no-preference) {
+ .cat-groove { transform-box:fill-box; transform-origin:50% 100%; animation:cat-groove 1.4s ease-in-out 3; }
+ .cat-tail { transform-box:fill-box; transform-origin:0% 90%; animation:cat-tail 1.4s ease-in-out 3; }
+ .cat-note { animation:cat-note 1.4s ease-in-out 3; }
+ .cat-sleep { transform-box:fill-box; transform-origin:50% 100%; animation:cat-sleep 2.1s ease-in-out 2; }
+ .cat-candle { transform-box:fill-box; transform-origin:50% 100%; animation:cat-candle 1.05s ease-in-out 4; }
+ @keyframes cat-groove { 0%,100% { transform:rotate(0deg); } 30% { transform:rotate(-5deg); } 70% { transform:rotate(5deg); } }
+ @keyframes cat-tail { 0%,100% { transform:rotate(0deg); } 50% { transform:rotate(-12deg); } }
+ @keyframes cat-note { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-12px); } }
+ @keyframes cat-sleep { 0%,100% { transform:scale(1); } 50% { transform:scale(1.025,1.035); } }
+ @keyframes cat-candle { 0%,100% { transform:rotate(-5deg) scale(1); } 50% { transform:rotate(7deg) scale(.92,1.08); } }
+}
+</style><defs><pattern id="disco-tiles" x="0" y="0" width="48" height="36" patternUnits="userSpaceOnUse"><rect width="24" height="18" fill="#d9ccef"/><rect x="24" y="18" width="24" height="18" fill="#d9ccef"/></pattern></defs>
+ <rect x="76" y="212" width="448" height="308" rx="144" fill="#f8b599"/>
+ <path d="M300 208v-35" stroke="#554075" stroke-width="3"/>
+ <circle cx="300" cy="207" r="24" fill="#fff6d5" stroke="#554075" stroke-width="2"/>
+ <path d="M278 201h44M278 212h44M300 183v48M289 187q-8 20 0 40M311 187q8 20 0 40" stroke="#bca9d4" fill="none" stroke-width="2"/>
+ <g fill="#554075" class="cat-note"><path d="M112 286v-32l24-5v29l-6 2v-21l-12 3v22z"/><ellipse cx="111" cy="285" rx="9" ry="6"/><ellipse cx="130" cy="279" rx="9" ry="6"/></g>
+ <g fill="#554075" class="cat-note"><path d="M472 302v-33l17 5v7l-11-3v22z"/><ellipse cx="471" cy="302" rx="9" ry="6"/></g>
+ <path d="M84 468h432v52H84z" fill="url(#disco-tiles)"/>
+ <ellipse cx="300" cy="501" rx="141" ry="12" fill="#c7b5df"/>
+ <g class="cat-groove">
+ <path class="cat-tail" d="M365 422c78 16 84-53 51-59-22-4-31 20-11 27" fill="none" stroke="#30303d" stroke-width="24" stroke-linecap="round"/>
+ <path d="M222 402q2-68 78-70 76 2 78 70v65H222z" fill="#30303d"/>
+ <path d="M269 373q31-14 62 0l14 72h-90z" fill="#fff6d5"/>
+ <path d="M217 287l-4-65 62 34q25-8 50 0l62-34-4 65q18 29 0 66-19 36-83 36t-83-36q-18-37 0-66" fill="#30303d"/>
+ <path d="M226 240l31 23-28 13zM374 240l-31 23 28 13z" fill="#f39fa7"/>
+ <path d="M221 289c-5-91 164-91 158 0" fill="none" stroke="#8fc9b7" stroke-width="15" stroke-linecap="round"/>
+ <rect x="207" y="282" width="21" height="49" rx="10" fill="#8fc9b7"/><rect x="372" y="282" width="21" height="49" rx="10" fill="#8fc9b7"/>
+ <ellipse cx="266" cy="309" rx="20" ry="24" fill="#fff6d5"/><ellipse cx="334" cy="309" rx="20" ry="24" fill="#fff6d5"/>
+ <ellipse cx="272" cy="310" rx="6" ry="13" fill="#30303d"/><ellipse cx="328" cy="310" rx="6" ry="13" fill="#30303d"/>
+ <path d="M291 333q9-7 18 0l-9 8z" fill="#f39fa7"/><path d="M300 341q-7 13-16 3m16-3q7 13 16 3" fill="none" stroke="#fff6d5" stroke-width="3" stroke-linecap="round"/>
+ <path d="M243 336l-29-6m29 15-29 4m143-13 29-6m-29 15 29 4" stroke="#fff6d5" stroke-width="2" stroke-linecap="round"/>
+ </g>
+ <rect x="166" y="420" width="268" height="70" rx="16" fill="#90cbb9" stroke="#30303d" stroke-width="3"/>
+ <ellipse cx="247" cy="455" rx="43" ry="25" fill="#30303d"/><ellipse cx="247" cy="455" rx="15" ry="9" fill="#f8b599"/>
+ <ellipse cx="353" cy="455" rx="43" ry="25" fill="#30303d"/><ellipse cx="353" cy="455" rx="15" ry="9" fill="#e9e1ff"/>
+ <path d="M278 432l-11 18h-13M383 432l-11 18h-12" fill="none" stroke="#fff6d5" stroke-width="4" stroke-linecap="round"/>
+ <path d="M299 439v31m-8-15h16" stroke="#30303d" stroke-width="4" stroke-linecap="round"/>
+ <ellipse cx="231" cy="421" rx="20" ry="10" fill="#30303d"/><ellipse cx="369" cy="421" rx="20" ry="10" fill="#30303d"/>
+ <path d="M135 348l4 12 13 3-13 5-4 12-4-12-13-5 13-3zM455 390l3 9 10 3-10 4-3 9-3-9-10-4 10-3z" fill="#fff6d5"/>
+ <circle cx="120" cy="421" r="4" fill="#554075"/><circle cx="466" cy="240" r="4" fill="#554075"/><text x="300" y="72" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="currentColor"><title>THE BIRTHDAY MIX</title><tspan x="300" dy="0">THE BIRTHDAY MIX</tspan></text><text x="300" y="128" text-anchor="middle" font-family="Georgia,serif" font-size="43" font-weight="700" fill="currentColor"><title>Birthday on repeat.</title><tspan x="300" dy="0">Birthday on</tspan><tspan x="300" dy="51.6">repeat.</tspan></text><text x="300" y="558" text-anchor="middle" font-family="Georgia,serif" font-size="29" font-weight="400" fill="currentColor"><title>Alex</title><tspan x="300" dy="0">Alex</tspan></text><text x="300" y="613" text-anchor="middle" font-family="Georgia,serif" font-size="23" font-weight="400" fill="currentColor"><title>Good tunes, great cake, and all your favourite people.</title><tspan x="300" dy="0">Good tunes, great cake, and all</tspan><tspan x="300" dy="27.599999999999998">your favourite people.</tspan></text><text x="300" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="currentColor"><title>With a little love</title><tspan x="300" dy="0">With a little love</tspan></text></g></svg>

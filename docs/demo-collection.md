@@ -7,11 +7,12 @@ The seed milestone applies two verified remote migrations:
 - `20261107152510_fictional_demo_catalog`: 12 fictional cards, six categories,
   four occasions, one template per card and varying personalization definitions.
 
-Ten designs are published, one draft and one archived. Six published cards are
+Twelve designs are now published, one draft and one archived. Eight published cards are
 available and free. Three published paid cards cost EUR 3.20, 4.50 and 4.80 and
 remain unavailable. A fourth unavailable published card is free. Catalog seed
-inserts preserve existing records with the same slugs; use future migrations to
-change seeded metadata rather than editing applied migration history.
+inserts preserve existing records with the same slugs. The two additional cat
+cards are catalogue content added through existing authenticated admin RPCs;
+no schema or migration history was changed. Never edit applied migration history.
 
 ## Designs and artwork
 
@@ -27,6 +28,8 @@ change seeded metadata rather than editing applied migration history.
 | You are pure sunshine | Side illustration and narrow message column | — |
 | The memories ahead | Landscape illustration with a text overlay | — |
 | A brilliant thing | Layered paper shapes and central message panel | Headline |
+| Disco whiskers | Charcoal headphone cat, mint DJ deck and lavender/peach dance floor | Headline |
+| Cake & catnaps | Ginger cat on an iced cake, daisies and a warm gingham frame | Headline |
 
 Original SVG artwork is committed under `public/demo-cards/`, including thumbnail
 and larger preview variants. It is intentionally local static demo media, not an
@@ -37,8 +40,13 @@ local static URLs. Other media continues to use the existing Storage architectur
 private user outputs must never use the static directory. A missing demo asset
 falls back to the same design's SVG renderer.
 
-`src/data/card-designs.js` contains ten trusted renderer implementations. The
-server returns only an allowlisted design key, not internal template JSON. Each
+`src/data/card-designs.js` contains twelve trusted renderer implementations. The
+server returns only an allowlisted design key, not internal template JSON. The
+older projection names ten designs; `publicDesignKey()` can also identify a known
+local design from its matching public `demo-<key>` slug and exact reserved demo
+asset path. Unknown keys, arbitrary slugs and arbitrary paths cannot select a
+renderer. This avoids exposing private configuration or requiring a schema change
+for new local artwork. Each
 template snapshot records that key and supported dynamic-region names. Typography,
 composition, illustration and decoration vary by design. The landscape is original
 demo illustration, not a user photo. Uploaded-photo fields remain unsupported.
@@ -46,6 +54,26 @@ demo illustration, not a user photo. Uploaded-photo fields remain unsupported.
 `npm run demo:artwork` recreates the static assets from the public renderer and
 `supabase/seed/catalog.json`. Treat renderer keys as versioned contracts; introduce
 a new key and template version before changing historical rendering behavior.
+
+The two original cat illustrations are defined in `src/data/cat-artwork.js`.
+Their CSS animations finish after 4.2 seconds; the editor provides Replay animation.
+Reduced-motion users receive SVGs with animation styles omitted, and the replay
+button is hidden. Static asset files also include a reduced-motion media query.
+See [the reduced-motion technique](https://www.w3.org/WAI/WCAG22/Techniques/css/C39).
+Editable recipient, headline, message and sender text is escaped and wrapped by
+the existing renderer. These are browser SVG animations; final animated exports
+and AI generation are not introduced.
+
+To add these two fixtures to another configured development catalogue, run
+`npm run demo:artwork`, then supply `CARDLY_ADMIN_EMAIL` and
+`CARDLY_ADMIN_PASSWORD` through the environment and run `npm run demo:seed-cats`.
+No privileged key is needed: the script verifies the authenticated database role
+and uses the same checked admin RPCs as the application. It reads real taxonomy
+IDs, creates drafts, configures templates/fields/assets, then publishes them free
+and available. Reruns preserve matching published entries; conflicts fail without
+overwriting existing content. Rebuild/redeploy the frontend alongside content
+updates so the renderer and local files are available. The two records and an
+idempotent second run were verified against the connected project.
 Text is XML-escaped and wrapped conservatively; long text truncates with an
 ellipsis inside its region. The full input remains in the form and saved data.
 

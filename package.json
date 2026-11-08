@@ -8,6 +8,7 @@
   },
   "scripts": {
     "demo:artwork": "node scripts/build-demo-artwork.js",
+    "demo:seed-cats": "node scripts/seed-cat-cards.js",
     "demo:configure-accounts": "node --env-file=.env.demo.local scripts/configure-demo-accounts.js",
     "dev": "vite",
     "build": "vite build && node scripts/verify-dist.js",

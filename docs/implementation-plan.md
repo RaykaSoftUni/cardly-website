@@ -338,6 +338,26 @@ plum envelope/heart identity, with an editable SVG source. All 17 HTML entries l
 the shared icon. Production build, ICO format/size checks, copied asset equality
 and all entry links were verified. No application behavior or database changed.
 
+## Milestone 7D — Two original animated cat birthday designs
+
+Added Disco whiskers (a headphone-wearing DJ cat) and Cake & catnaps (a sleeping
+ginger cat on an iced cake). Both use original SVG artwork, distinct palettes and
+compositions, editable name/headline/message/sender, and 4.2-second animations.
+The editor can replay animation; reduced-motion rendering omits animation styles.
+The two free, available entries were added to the connected catalogue through
+existing authorized admin RPCs, preserving existing records. Templates and asset
+metadata use the established demo-media convention. No schema/migration history
+was changed, and no previously generated snapshots were rewritten. The collection
+now has 14 cards, 12 published. See [demo collection](demo-collection.md) for the
+repeatable seed command and public design resolution for the older projection.
+
+Verification: build, all 19 production routes/assets and all 56 browser checks
+passed, including real catalogue records, guest personalization, animation pixel
+changes, still reduced-motion previews and mobile accessibility. The authenticated
+seed's second run preserved both entries. SQL seed assertions were updated for
+the 14-card collection but could not run through the unavailable management
+connector; actual content was verified through the public/admin application APIs.
+
 ## Milestone 8 — Optional AI greeting generation
 
 Implement only if selected for the MVP. Through a trusted server boundary, use

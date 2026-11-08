@@ -41,6 +41,10 @@ Storage assets and user roles at `/admin/`. See [administration](docs/administra
 for permissions, support-data limits, historical asset retention and verification.
 The [Images & Assets guide](docs/card-assets.md) covers batch uploads, local
 previews, hero assets, primary selection, ordering and configurable upload limits.
+The catalogue includes two original animated cat birthday cards, **Disco whiskers**
+and **Cake & catnaps**. Filter by “Animated illustration” to see them. Both are free
+and available, with editable text, brief animations, an editor replay control and
+static reduced-motion rendering. The demo collection guide documents their seed command.
 The [Account guide](docs/account.md) covers `/account/`, profile editing, password
 change and recovery, local logout, and Auth email configuration. Avatar support is
 implemented behind a capability check; its Storage/validation migration is prepared

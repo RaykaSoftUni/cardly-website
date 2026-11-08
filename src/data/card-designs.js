@@ -1,5 +1,8 @@
 // Public renderer definitions. Private template configuration never enters this module.
+import { discoCat, catnapCake, catMotion } from './cat-artwork.js';
 export const designs = {
+ 'disco-whiskers': { background: '#e9e1ff', ink: '#30244c', headline: 'Birthday on repeat.', message: 'Good tunes, great cake, and all your favourite people.', composition: 'disco-cat', animated: true },
+ 'cake-catnaps': { background: '#fff4e3', ink: '#234b43', headline: 'Cake first. Catnap later.', message: 'A little sweetness. A lot of love. A day just for you.', composition: 'catnap', animated: true },
  'birthday-type': { background: '#f5ebdf', ink: '#263f37', headline: 'A very happy birthday.', message: 'A new year of little wonders.', composition: 'type' },
  'space-explorer': { background: '#172747', ink: '#fff4ca', headline: 'Out of this world!', message: 'Your next big adventure starts today.', composition: 'space' },
  'wild-confetti': { background: '#ffe882', ink: '#573287', headline: 'Hooray for you!', message: 'Cake, wishes and a little wild magic.', composition: 'confetti' },
@@ -12,6 +15,13 @@ export const designs = {
  'paper-party': { background: '#f2e9f0', ink: '#463447', headline: 'You did a brilliant thing.', message: 'A whole new chapter deserves a celebration.', composition: 'collage' },
 };
 const escape = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]));
+// Older public projections recognize only the original ten renderer keys.
+// Local demo art is already public. Resolve only a matching known slug AND asset;
+// never fetch or expose private template configuration to identify new designs.
+export function publicDesignKey(card) {
+ if (Object.hasOwn(designs,card.design_key)) return card.design_key;
+ return Object.keys(designs).find(key => card.slug === `demo-${key}` && card.preview_assets?.some(asset => asset.storage_path === `demo-cards/${key}-preview.svg` || asset.storage_path === `demo-cards/${key}-thumb.svg`)) || null;
+}
 function text(value, x, y, width, size, { maxLines = 3, align = 'middle', family = 'Georgia,serif', weight = 400, fill = 'currentColor' } = {}) {
  const measure = (value) => Array.from(value).reduce((sum, char) => sum + (/[MW@%]/.test(char) ? 1.08 : /[ilI.,'! :;]/.test(char) ? .38 : /[A-Zmw]/.test(char) ? .86 : char.codePointAt(0) > 255 ? 1.1 : .67), 0) * size;
  const words = String(value ?? '').split(/\s+/).flatMap(word => {
@@ -28,7 +38,7 @@ function text(value, x, y, width, size, { maxLines = 3, align = 'middle', family
  return `<text x="${x}" y="${y}" text-anchor="${align}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="${fill}"><title>${escape(value)}</title>${shown.map((v,i)=>`<tspan x="${x}" dy="${i ? size * 1.2 : 0}">${escape(v)}</tspan>`).join('')}</text>`;
 }
 const star = (x,y,r,color) => `<path d="M${x} ${y-r} L${x+r*.3} ${y-r*.3} L${x+r} ${y} L${x+r*.3} ${y+r*.3} L${x} ${y+r} L${x-r*.3} ${y+r*.3} L${x-r} ${y} L${x-r*.3} ${y-r*.3}Z" fill="${color}"/>`;
-export function renderCardSvg(key, values = {}) {
+export function renderCardSvg(key, values = {}, { animate = true, replay = 0 } = {}) {
  const d = designs[key] || designs['birthday-type'];
  const name = values.recipient_name || 'Someone wonderful';
  const sender = values.sender_name ? `From ${values.sender_name}` : 'With a little love';
@@ -40,7 +50,10 @@ export function renderCardSvg(key, values = {}) {
  const age = values.recipient_age ? `${values.recipient_age}` : '';
  let art = ''; let regions = '';
  const body = (y=540, color=d.ink) => text(message,300,y,450,24,{maxLines:4,fill:color}) + text(sender,300,740,440,19,{family:'Arial,sans-serif',fill:color});
- if (d.composition === 'type') {
+ if (d.composition === 'disco-cat' || d.composition === 'catnap') {
+  art = (animate ? catMotion : '') + (d.composition === 'disco-cat' ? discoCat() : catnapCake());
+  regions = text(d.composition === 'disco-cat' ? 'THE BIRTHDAY MIX' : 'THE SLOW BIRTHDAY CLUB',300,72,450,14,{family:'Arial,sans-serif',weight:700}) + text(headline,300,128,460,43,{maxLines:2,weight:700}) + text(name,300,558,455,29,{maxLines:1}) + text(message,300,613,440,23,{maxLines:4}) + text(sender,300,737,440,18,{family:'Arial,sans-serif'});
+ } else if (d.composition === 'type') {
   art = '<circle cx="485" cy="126" r="54" fill="#edbc82"/><path d="M62 675h476" stroke="#263f37" stroke-width="2"/>';
   regions = text('A DAY JUST FOR',90,115,400,16,{align:'start',family:'Arial,sans-serif',weight:700}) + text(name,90,190,420,35,{align:'start',maxLines:2}) + text(headline,90,335,430,70,{align:'start',maxLines:3,weight:700}) + text(message,90,600,420,23,{align:'start',maxLines:2}) + text(sender,90,725,420,19,{align:'start'});
  } else if (d.composition === 'space') {
@@ -71,5 +84,5 @@ export function renderCardSvg(key, values = {}) {
   art = '<path d="M20 90l285-60 30 305L55 360z" fill="#e2b7c3"/><path d="M310 175l270 70-85 330-245-85z" fill="#dfac65"/><circle cx="170" cy="555" r="128" fill="#91aaa0"/><path d="M450 40l45 55-45 55-45-55z" fill="#a69bc6"/><path d="M95 320l390-45 40 220-390 45z" fill="#fff8e8"/>';
   regions = text(name,285,200,420,28,{maxLines:2}) + text(headline,300,365,360,43,{weight:700,maxLines:3}) + text(message,300,640,440,24,{maxLines:3}) + text(sender,300,755,440,18);
  }
- return `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img" aria-label="${escape(headline)}"><rect width="600" height="800" fill="${d.background}"/><g color="${d.ink}">${art}${regions}</g></svg>`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" role="img" aria-label="${escape(headline)}"${d.animated ? ` data-animation-run="${Number.isSafeInteger(replay) ? replay : 0}"` : ''}><rect width="600" height="800" fill="${d.background}"/><g color="${d.ink}">${art}${regions}</g></svg>`;
 }

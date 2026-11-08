@@ -43,7 +43,7 @@ test('public navigation and keyboard-operated mobile menu use document navigatio
 
 test('catalogue filters preserve state, show EUR prices and an empty state', async ({page})=>{
  await page.goto('/cards/');
- await expect(page.locator('.catalog-card')).toHaveCount(10);
+ await expect(page.locator('.catalog-card')).toHaveCount(demoCards.length);
  await page.getByLabel('Free or paid').selectOption('paid');
  await expect(page.locator('.catalog-card')).toHaveCount(3);
  await expect(page.locator('.catalog-card').first()).toContainText('€4.50');
@@ -84,9 +84,9 @@ test('per-card personalization validates safely and retains input across errors'
 test('missing artwork falls back to its own design and long text stays responsive',async({page})=>{
  await page.route('**/demo-cards/*',route=>route.abort());
  await page.goto('/cards/');
- await expect(page.locator('.catalog-card')).toHaveCount(10);
+ await expect(page.locator('.catalog-card')).toHaveCount(demoCards.length);
  await page.locator('.catalog-card img').evaluateAll(images=>images.forEach(image=>image.loading='eager'));
- await expect(page.locator('.catalog-card .design-preview')).toHaveCount(10);
+ await expect(page.locator('.catalog-card .design-preview')).toHaveCount(demoCards.length);
  await page.goto('/card-editor/?id='+demoCards[0].id);
  await page.setViewportSize({width:375,height:850});
  await page.getByLabel('Recipient name').fill('A'.repeat(60));
@@ -115,5 +115,5 @@ test('catalogue uses its explicit primary image and falls back when none exists'
  await page.goto('/cards/');
  await expect(page.locator('.catalog-card').first().locator('img')).toHaveAttribute('src','/demo-cards/birthday-type-preview.svg');
  empty=true;await page.reload();
- await expect(page.locator('.catalog-card .design-preview')).toHaveCount(10);
+ await expect(page.locator('.catalog-card .design-preview')).toHaveCount(demoCards.length);
 });

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { mockCatalog } from './helpers/demo-catalog.js';
+import { mockCatalog, demoCards } from './helpers/demo-catalog.js';
 test.beforeEach(async ({ page }) => mockCatalog(page));
 
 test('HTML has a styled loading shell before JavaScript arrives', async ({ page }) => {
@@ -15,7 +15,7 @@ test('HTML has a styled loading shell before JavaScript arrives', async ({ page 
     expect(await page.locator('body').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgb(250, 248, 244)');
     await expect(page.locator('main')).not.toContainText('This page is a placeholder');
     release();
-    await expect(page.locator('.catalog-card')).toHaveCount(10);
+    await expect(page.locator('.catalog-card')).toHaveCount(demoCards.length);
     await expect(page.locator('main')).not.toHaveAttribute('aria-busy', 'true');
     const after = await page.locator('.site-header .brand').boundingBox();
     expect(Math.abs(before.x - after.x)).toBeLessThan(1);
@@ -35,14 +35,14 @@ test('slow data keeps the shell stable until the complete catalog is ready', asy
   await expect(page.locator('main h1')).toHaveCount(0);
   release();
   await expect(page.getByRole('heading', { name: 'Find their kind of card.' })).toBeVisible();
-  await expect(page.locator('.catalog-card')).toHaveCount(10);
+  await expect(page.locator('.catalog-card')).toHaveCount(demoCards.length);
   await expect(page.locator('.page-loading')).toHaveCount(0);
   expect(await page.locator('.site-header').boundingBox()).toEqual(header);
 });
 
 test('short and long pages keep the same horizontal alignment with ordinary navigation', async ({ page }) => {
   await page.goto('/cards/');
-  await expect(page.locator('.catalog-card')).toHaveCount(10);
+  await expect(page.locator('.catalog-card')).toHaveCount(demoCards.length);
   const before = await page.locator('.site-header .brand').boundingBox();
   await page.evaluate(() => { window.documentMarker = 'catalog-document'; });
   await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Login', exact: true }).click();
@@ -61,7 +61,7 @@ test('reduced motion disables loading shimmer and the content reveal', async ({ 
   await expect(page.locator('.page-loading')).toBeVisible();
   expect(await page.locator('.skeleton').first().evaluate(el => getComputedStyle(el).animationName)).toBe('none');
   release();
-  await expect(page.locator('.catalog-card')).toHaveCount(10);
+  await expect(page.locator('.catalog-card')).toHaveCount(demoCards.length);
   expect(await page.locator('main').evaluate(el => getComputedStyle(el).animationName)).toBe('none');
 });
 

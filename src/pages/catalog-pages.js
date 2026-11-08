@@ -70,7 +70,7 @@ async function detail(main,pageId){
  const c=await cardDetail(id);
  if(!c)return main.replaceChildren(intro('Card not found','This card is not publicly available.'),button({label:'Browse cards',href:'/cards/'}));
  const query=returnQuery();
- const back=el('a',{href:link('/cards/',null,query),className:'d-inline-block mb-4'},'← Back to your cards');
+ const back=el('a',{href:link('/cards/',null,query),className:'catalog-back-link d-inline-block mb-4'},'← Back to your cards');
  if(pageId==='card'){
   main.replaceChildren(back,intro(c.title,c.description),notice(),el('div',{className:'editor-layout'},[artwork(c,'preview'),el('section',{className:'surface-panel'},[el('p',{className:'eyebrow'},`${c.occasion?.name||''} · ${c.category?.name||''} · ${c.style||''}`),el('h2',{},'Make it personal'),status(c),el('p',{},'Personalize: '+c.personalization_fields.map(f=>f.label.toLowerCase()).join(', ')+'.'),button({label:eligible(c)?'Personalize':'Currently unavailable',href:link('/card-editor/',c.id,query),disabled:!eligible(c)}),el('p',{className:'field-hint mt-3'},c.pricing_type==='paid'?'EUR price shown for reference. Purchasing is not available.':'Preview your words before saving. Sign in to save your own draft.')])]));return;
  }

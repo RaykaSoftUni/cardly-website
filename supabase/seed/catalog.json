@@ -657,5 +657,109 @@
       }
     ],
     "sort_order": 11
+  },
+  {
+    "slug": "disco-whiskers",
+    "title": "Disco whiskers",
+    "category": "Playful",
+    "description": "An original charcoal cat in mint headphones mixing birthday tunes on a tiny DJ deck. Lavender, peach and mint artwork with a gently dancing cat and floating music notes.",
+    "occasion": "Birthday",
+    "style": "Animated illustration",
+    "paid": false,
+    "price": 0,
+    "available": true,
+    "status": "published",
+    "designKey": "disco-whiskers",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "main_headline",
+        "label": "Main headline",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 80
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 12
+  },
+  {
+    "slug": "cake-catnaps",
+    "title": "Cake & catnaps",
+    "category": "Funny",
+    "description": "An original sleepy ginger cat curled on a pink-iced birthday cake, framed by warm gingham and little daisies. Gentle breathing, a swishing tail and a flickering candle.",
+    "occasion": "Birthday",
+    "style": "Animated illustration",
+    "paid": false,
+    "price": 0,
+    "available": true,
+    "status": "published",
+    "designKey": "cake-catnaps",
+    "fields": [
+      {
+        "key": "recipient_name",
+        "label": "Recipient name",
+        "type": "text",
+        "required": true,
+        "config": {
+          "max_length": 60
+        }
+      },
+      {
+        "key": "main_headline",
+        "label": "Main headline",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 80
+        }
+      },
+      {
+        "key": "custom_message",
+        "label": "Your message",
+        "type": "textarea",
+        "required": false,
+        "config": {
+          "max_length": 240
+        }
+      },
+      {
+        "key": "sender_name",
+        "label": "Sender name",
+        "type": "text",
+        "required": false,
+        "config": {
+          "max_length": 60
+        }
+      }
+    ],
+    "sort_order": 13
   }
 ]

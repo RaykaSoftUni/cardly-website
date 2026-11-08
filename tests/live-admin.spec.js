@@ -13,7 +13,7 @@ test('live admin login and protected management pages', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Administration workspace' })).toBeVisible({ timeout: 20000 });
   await page.goto('/admin/cards/');
-  await expect(page.locator('table tbody tr')).toHaveCount(12, { timeout: 20000 });
+  await expect(page.locator('table tbody tr')).toHaveCount(14, { timeout: 20000 });
   await page.getByRole('link', { name: 'Tiny space explorer', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Save card', exact: true })).toBeVisible({ timeout: 20000 });
   await expect(page.getByRole('heading', { name: 'Card template', exact: true })).toBeVisible({ timeout: 20000 });
