@@ -10,7 +10,7 @@ export async function mockAdmin(page, role = 'admin') {
   const user = { id: adminId, email: 'operator@example.test', aud: 'authenticated', user_metadata: { role: 'admin' }, app_metadata: { provider: 'email' } };
   const payload = Buffer.from(JSON.stringify({ sub: adminId, role: 'authenticated', exp: Math.floor(Date.now()/1000)+3600 })).toString('base64url');
   await page.addInitScript(({ host, user, payload }) => localStorage.setItem(`sb-${host}-auth-token`, JSON.stringify({ access_token: `test.${payload}.not-a-real-signature`, refresh_token: 'test-only-refresh', expires_at: Math.floor(Date.now()/1000)+3600, expires_in: 3600, token_type: 'bearer', user })), { host, user, payload });
-  const state = { role, writes: [], uploads: [], reads: [], users: [{ id: adminId, email: user.email, display_name: 'Operator', role: 'admin', created_at: new Date().toISOString() }, { id: otherId, email: 'reader@example.test', display_name: 'Reader', role: 'user', created_at: new Date().toISOString() }],
+  const state = { settings: {max_bytes:5242880,mime_types:['image/png','image/jpeg','image/webp']}, role, writes: [], uploads: [], reads: [], users: [{ id: adminId, email: user.email, display_name: 'Operator', role: 'admin', created_at: new Date().toISOString() }, { id: otherId, email: 'reader@example.test', display_name: 'Reader', role: 'user', created_at: new Date().toISOString() }],
     cards: [{ id: cardId, title: 'Protected card', slug: 'protected-card', description: 'A test catalog card', status: 'draft', pricing_type: 'free', price: null, currency: 'EUR', is_available: true, is_featured: false, sort_order: 0 }],
     categories: [{ id: uid(4), name: 'Elegant', slug: 'elegant', description: '', is_active: true, sort_order: 0 }],
     occasions: [{ id: uid(5), name: 'Birthday', slug: 'birthday', description: '', is_active: true, sort_order: 0 }],
@@ -27,7 +27,15 @@ export async function mockAdmin(page, role = 'admin') {
       const args = request.postDataJSON();
       if (entity === 'admin_list_users') return route.fulfill({ json: state.users });
       if (entity === 'admin_generated_metadata') return route.fulfill({ json: [{ id: uid(90), user_id: otherId, card_title: 'Snapshot title', template_version: 2, status: 'processing', created_at: new Date().toISOString() }] });
+      if(entity==='admin_asset_settings') { if(args.p_max_bytes!==null)state.settings.max_bytes=args.p_max_bytes; return route.fulfill({json:state.settings}); }
       state.writes.push({ entity, args });
+      if(entity==='admin_save_card_asset') {
+        if(args.p_asset.is_primary)state.card_images.forEach(r=>r.is_primary=false);
+        let row=state.card_images.find(r=>r.id===args.p_id);
+        if(row)Object.assign(row,args.p_asset);else { row={id:uid(100+state.writes.length),card_id:args.p_card_id,...args.p_asset};state.card_images.push(row); }
+        return route.fulfill({json:row});
+      }
+      if(entity==='admin_reorder_assets')args.p_asset_ids.forEach((id,i)=>state.card_images.find(r=>r.id===id).sort_order=i);
       if (entity === 'admin_save_card_data') {
         if (args.p_data.slug === 'taken') return route.fulfill({ status: 409, json: { code: '23505', message: 'duplicate slug' } });
         const rows = state[args.p_entity];

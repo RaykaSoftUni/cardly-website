@@ -4,6 +4,7 @@ import { createForm } from '../components/forms/fields.js';
 import { createHeader } from '../components/layout/header.js';
 import { confirmDialog } from '../components/feedback/confirm-dialog.js';
 import * as admin from '../services/admin-service.js';
+import { createAssetManager } from '../components/admin/asset-manager.js';
 
 const yesNo = [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }];
 const option = (value, label = value) => ({ value, label });
@@ -62,7 +63,8 @@ export async function renderAdminPage(main, pageId) {
   const verify = async () => { try { const next = await admin.adminContext(); if (!next.isAdmin) denied(main, next); } catch { /* Mutations still verify and fail closed. */ } };
   window.addEventListener('focus', verify);
   const objectUrls = [];
-  cleanup = () => { window.removeEventListener('focus', verify); for (const url of objectUrls) URL.revokeObjectURL(url); };
+  let assetManager;
+  cleanup = () => { assetManager?.destroy(); window.removeEventListener('focus', verify); for (const url of objectUrls) URL.revokeObjectURL(url); };
   const feedback = el('p', { className: 'admin-feedback', role: 'status', 'aria-live': 'polite' });
   const content = el('div');
   main.replaceChildren(nav(), feedback, content);
@@ -119,8 +121,11 @@ export async function renderAdminPage(main, pageId) {
     edit(null);
   }
   async function editCard() {
+    const stagedAssets = assetManager?.hasPending() ? assetManager : null;
+    if (!stagedAssets) assetManager?.destroy();
     const id = new URLSearchParams(location.search).get('id');
-    const [card, categories, occasions] = await Promise.all([id ? admin.getAdminCard(id) : null, admin.listAdminData('categories'), admin.listAdminData('occasions')]);
+    const [card, categories, occasions, settings] = await Promise.all([id ? admin.getAdminCard(id) : null, admin.listAdminData('categories'), admin.listAdminData('occasions'), admin.assetSettings()]);
+    let savedId = card?.id;
     const fields = [
       { name: 'title', label: 'Card title', required: true, value: card?.title || '' },
       { name: 'slug', label: 'Unique slug', required: true, value: card?.slug || '' },
@@ -137,8 +142,13 @@ export async function renderAdminPage(main, pageId) {
     const form = managedForm({ ...formOptions, fields, submitLabel: 'Save card', onSave: async values => {
       if (values.pricing_type === 'paid' && values.price === '') { form.setErrors({ price: 'Enter the EUR price for a paid card.' }); throw new Error('A paid card needs a EUR price.'); }
       if (card && values.status !== card.status && ['draft', 'archived'].includes(values.status) && !await confirmRemoval('Change publication?', 'The card will no longer appear in the public catalog. Saved snapshots stay intact.')) return false;
-      return admin.saveAdminData('cards', { ...values, category_id: values.category_id || null, occasion_id: values.occasion_id || null, currency: 'EUR', price: values.pricing_type === 'free' ? null : Number(values.price),
-        is_available: values.pricing_type === 'free' && values.is_available === 'true', is_featured: values.is_featured === 'true', sort_order: Number(values.sort_order) }, card?.id);
+      assetManager?.validatePending();
+      const saved = await admin.saveAdminData('cards', { ...values, category_id: values.category_id || null, occasion_id: values.occasion_id || null, currency: 'EUR', price: values.pricing_type === 'free' ? null : Number(values.price),
+        is_available: values.pricing_type === 'free' && values.is_available === 'true', is_featured: values.is_featured === 'true', sort_order: Number(values.sort_order) }, savedId);
+      savedId = saved.id;
+      assetManager?.bindCard(savedId);
+      if (assetManager?.hasPending()) await assetManager.commit(savedId);
+      return saved;
     }, success: async saved => {
       if (!id) { sessionStorage.setItem('cardly-admin-flash', 'Card created. Configure its template, fields and artwork below.'); location.assign(`/admin/card-edit/?id=${saved.id}`); }
       else { success('Card saved.'); await editCard(); }
@@ -149,9 +159,10 @@ export async function renderAdminPage(main, pageId) {
     const reflectPricing = () => { availability.disabled = pricing.value === 'paid'; if (availability.disabled) availability.value = 'false'; };
     pricing.addEventListener('change', reflectPricing); reflectPricing();
     content.replaceChildren(intro(card ? `Edit ${card.title}` : 'Create a card', 'Publication, pricing and availability are enforced by the database.'), el('section', { className: 'surface-panel' }, form.element));
-    if (!card) { content.append(el('p', { className: 'field-hint mt-3' }, 'Save the card first to configure its template, personalization fields and images.')); return; }
+    if (!card) { assetManager = stagedAssets || assetsEditor({ id: null }, [], settings); content.append(assetManager.element, el('p', { className: 'field-hint mt-3' }, 'Selected images upload when you save the card. Configure the template and personalization fields afterward.')); return; }
     const [templates, definitions, images] = await Promise.all([admin.listAdminData('card_templates', id), admin.listAdminData('personalization_fields', id), admin.listAdminData('card_images', id)]);
-    content.append(templateEditor(card, templates[0]), fieldsEditor(card, definitions), assetsEditor(card, images));
+    assetManager = stagedAssets || assetsEditor(card, images, settings);
+    content.append(templateEditor(card, templates[0]), fieldsEditor(card, definitions), assetManager.element);
   }
   function templateEditor(card, template) {
     const form = managedForm({ ...formOptions, fields: [
@@ -202,37 +213,25 @@ export async function renderAdminPage(main, pageId) {
       button({ label: 'New personalization field', variant: 'quiet', onClick: () => edit(null) }), editor);
     edit(null); return root;
   }
-  function assetsEditor(card, images) {
-    const editor = el('div', { className: 'surface-panel' });
-    const edit = asset => {
-      const form = managedForm({ ...formOptions, fields: [
-        { name: 'image_type', label: 'Asset type', options: ['thumbnail', 'preview', 'background', 'decorative'], value: asset?.image_type || 'preview' },
-        { name: 'alt_text', label: 'Image description / alt text', required: true, value: asset?.alt_text || '', hint: 'Describe the image meaningfully for people who cannot see it.' },
-        { name: 'sort_order', label: 'Image display order', required: true, type: 'number', min: 0, value: asset?.sort_order ?? 0 },
-        { name: 'file', label: asset ? 'Replacement image (optional)' : 'Image file', type: 'file', required: !asset, accept: 'image/png,image/jpeg,image/webp', hint: 'PNG, JPEG or WebP up to 5 MiB. Replacements use a new path to preserve older renders.' },
-      ], submitLabel: asset ? 'Save image / replacement' : 'Upload image', onSave: async values => {
-        let path = asset?.storage_path;
-        let uploaded;
-        if (values.file) { uploaded = await admin.uploadCardAsset(card.id, values.file); path = uploaded; }
-        try { return await admin.saveAdminData('card_images', { card_id: card.id, storage_path: path, image_type: values.image_type, alt_text: values.alt_text, sort_order: Number(values.sort_order) }, asset?.id); }
-        catch (error) { if (uploaded) { try { await admin.deleteUnreferencedAsset(uploaded); } catch { /* An operator can clean up unassociated files after authorization is restored. */ } } throw error; }
-      }, success: async () => { success('Image saved. Older paths are retained for historical templates and snapshots.'); await editCard(); } });
-      editor.replaceChildren(el('h3', {}, asset ? 'Edit image' : 'New image'), form.element);
-    };
-    const tiles = images.map(asset => {
-      const preview = el('img', { className: 'admin-asset-preview', alt: asset.alt_text || 'Catalog asset' });
-      admin.assetPreview(asset.storage_path).then(url => { if (url.startsWith('blob:')) objectUrls.push(url); preview.src = url; }).catch(() => { preview.replaceWith(el('p', {}, 'Image preview unavailable.')); });
-      return el('article', { className: 'surface-panel' }, [preview, el('p', {}, `${asset.image_type} · ${asset.alt_text || 'No alt text'}`), el('code', { className: 'admin-path' }, asset.storage_path),
-        button({ label: `Edit ${asset.image_type} image`, variant: 'quiet', onClick: () => edit(asset) }),
-        guarded(`Remove ${asset.image_type} image`, async () => {
-          await admin.removeAdminData('card_images', asset.id);
+  function assetsEditor(card, images, settings) {
+    return createAssetManager({ cardId: card.id, images, settings,
+      onBindCard: id => { card.id = id; },
+      onUpload: (item, targetId) => admin.saveUploadedAsset(targetId, item),
+      onUpdate: (asset, values) => admin.saveAssetMetadata(card.id, values, asset.id),
+      onPrimary: asset => admin.saveAssetMetadata(card.id, { is_primary: true }, asset.id),
+      onReorder: ids => admin.reorderAssets(card.id, ids),
+      onConfigure: bytes => admin.assetSettings(bytes),
+      onPreview: path => admin.assetPreview(path), onError: fail, onSuccess: success,
+      onRemove: async asset => {
+        if (!await confirmRemoval('Remove image?', 'Remove this catalog image? Files referenced by historical templates or generations will be retained.')) return false;
+        await admin.removeAdminData('card_images', asset.id);
+        try {
           const removed = await admin.deleteUnreferencedAsset(asset.storage_path);
-          success(removed ? 'Image association and unreferenced file removed.' : 'Image association removed. The file is retained for saved versions or static demo artwork.'); await editCard();
-        }, { destructive: true, message: 'Remove this catalog image? Files referenced by historical templates or generations are retained.' }),
-      ]);
+          success(removed ? 'Image association and unreferenced file removed.' : 'Image removed from this card. Its file is retained for saved versions or static demo artwork.');
+        } catch (error) { success('Image association removed. File cleanup needs a retry when authorization and the connection are available.'); if (error.code === '42501') verify(); }
+        return true;
+      },
     });
-    const root = section({ title: 'Images and assets', children: [el('div', { className: 'admin-assets-grid' }, tiles), button({ label: 'New image', variant: 'quiet', onClick: () => edit(null) }), editor] });
-    edit(null); return root;
   }
   async function users() {
     const rows = await admin.listSupportData('users');

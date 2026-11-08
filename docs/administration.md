@@ -75,6 +75,11 @@ another account's role. Private drafts/generated cards remain owner-only.
 
 ## Assets and historical versions
 
+The subsequent [Images & Assets manager](card-assets.md) extends this foundation
+with Create-card staging, drag/drop, batch selection, immediate local previews,
+hero assets, primary catalogue selection, reordering and configurable size limits.
+Its guide documents the current interface and verification status.
+
 The private `card-assets` bucket enforces PNG/JPEG/WebP and a 5 MiB limit on the
 server. The admin service also checks signatures, browser decoding and a 40-million-
 pixel limit. SQL does not inspect image bytes. SVG uploads are excluded; original
@@ -85,8 +90,9 @@ paths and metadata are saved in Postgres. Alt text is required by the UI, and pu
 thumbnail/preview alt text cannot be blank in the database. Public pages now load
 permitted Storage previews as well as local demo artwork.
 
-Replacement uploads a new object and changes the association, retaining older
-paths. Removal deletes the association and uses the Storage API for unreferenced
+Replacement uploads a new object and changes the association, retaining referenced
+older paths and cleaning up unreferenced replacements. Removal deletes the
+association and uses the Storage API for unreferenced
 files. Files referenced by other image records, current/historical templates or
 generation snapshots are retained. JSON reference checks are conservative. Future
 generation snapshots include the image manifest; earlier snapshots are untouched.

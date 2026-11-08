@@ -39,6 +39,8 @@ jobs require a trusted worker; no image renderer is deployed by the SQL workflow
 Database admins can manage cards, template revisions, fields, categories/occasions,
 Storage assets and user roles at `/admin/`. See [administration](docs/administration.md)
 for permissions, support-data limits, historical asset retention and verification.
+The [Images & Assets guide](docs/card-assets.md) covers batch uploads, local
+previews, hero assets, primary selection, ordering and configurable upload limits.
 
 ## Production verification
 

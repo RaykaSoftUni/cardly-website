@@ -55,10 +55,13 @@ export function adminError(error) {
   if (error.code === '42501') return 'Your administrator authorization is no longer valid. Sign in again.';
   return error.message || 'The operation could not be completed. Your input has been kept.';
 }
+export const assetSettings = (maxBytes = null) => call('admin_asset_settings', { p_max_bytes: maxBytes });
+export const saveAssetMetadata = (cardId, data, id = null) => call('admin_save_card_asset', { p_card_id: cardId, p_asset: data, p_id: id });
+export const reorderAssets = (cardId, ids) => call('admin_reorder_assets', { p_card_id: cardId, p_asset_ids: ids });
 export async function uploadCardAsset(cardId, file) {
-  await requireAdmin();
-  if (!file || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024 || file.size === 0) {
-    throw new Error('Choose a PNG, JPEG or WebP image up to 5 MiB.');
+  const settings = await assetSettings();
+  if (!file || !['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > settings.max_bytes || file.size === 0) {
+    throw new Error(`Choose a PNG, JPEG or WebP image up to ${settings.max_bytes / 1048576} MiB.`);
   }
   const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
   const png = bytes.slice(0, 8).join() === '137,80,78,71,13,10,26,10';
@@ -95,4 +98,19 @@ export async function assetPreview(path) {
 export async function logoutAdmin() { await supabaseClient.auth.signOut(); }
 export function watchAdminLogout(onLogout) {
   return supabaseClient.auth.onAuthStateChange(event => { if (event === 'SIGNED_OUT') onLogout(); }).data.subscription;
+}
+
+export async function saveUploadedAsset(cardId, item) {
+  const path = await uploadCardAsset(cardId, item.file);
+  let saved;
+  try {
+    saved = await saveAssetMetadata(cardId, {storage_path:path, alt_text:item.alt_text, image_type:item.image_type, sort_order:item.sort_order, is_primary:item.is_primary}, item.replaceId || null);
+  } catch (error) {
+    try { await deleteUnreferencedAsset(path); } catch { /* Retry cleanup through trusted administration after access/network recovery. */ }
+    throw error;
+  }
+  if (item.oldPath && item.oldPath !== path) {
+    try { await deleteUnreferencedAsset(item.oldPath); } catch { saved.cleanupPending = true; }
+  }
+  return saved;
 }

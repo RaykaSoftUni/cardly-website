@@ -1,7 +1,7 @@
 import { el } from '../utils/dom.js';
 import { button,section } from '../components/ui.js';
 import { createField,createForm } from '../components/forms/fields.js';
-import { createDesignPreview,createDemoArtwork } from '../components/cards/design-preview.js';
+import { createDesignPreview,createDemoArtwork,selectCardAsset } from '../components/cards/design-preview.js';
 import { priceAndAvailability } from '../components/cards/listing.js';
 import { emptyState } from '../components/feedback/states.js';
 import { catalog,cardDetail,rpc } from '../services/catalog-service.js';
@@ -18,7 +18,7 @@ function returnQuery(){const p=params();p.delete('id');return p.toString();}
 function link(path,id,query=returnQuery()){const p=new URLSearchParams(query);if(id)p.set('id',id);return `${path}${p.size?'?'+p:''}`;}
 function artwork(c,size='thumb') {
  const holder=el('div',{},createDemoArtwork(c,size));
- const asset=c.preview_assets?.find(a=>a.image_type===(size==='thumb'?'thumbnail':'preview'));
+ const asset=selectCardAsset(c,size);
  if(asset&&!asset.storage_path.startsWith('demo-cards/'))publicAssetUrl(asset.storage_path).then(url=>holder.replaceChildren(createDemoArtwork(c,size,url))).catch(()=>{});
  return holder;
 }

@@ -283,6 +283,22 @@ Completion: verify the complete admin workflow and database rejection of regular
 user attempts. Public catalog visibility must follow publication changes. Paid
 purchase functionality remains disabled for the MVP.
 
+## Milestone 7A — Card Images & Assets (implemented; SQL verification pending)
+
+Authorized by the explicit image-management request. Implemented a reusable
+Create/Edit asset section with drag/drop, immediate local previews, batch upload,
+per-image type/alt text, primary selection, secondary ordering, replacement and
+confirmed removal. New cards stage files until a real card ID exists; retrying an
+upload does not create duplicate cards. The service cleans unreferenced replaced
+or failed-association uploads while retaining historical dependencies.
+
+Applied `20261108124321_card_asset_manager`: hero assets, unique primary metadata,
+atomic selection/order operations, configurable bucket limits and safe public
+primary projections. Browser and live API verification is recorded in
+docs/card-assets.md. The standalone SQL suite and follow-up remote checksum check
+are pending because MCP OAuth refresh failed after migration application, including
+after reconnection. No privileged credentials or new dependencies were introduced.
+
 ## Milestone 8 — Optional AI greeting generation
 
 Implement only if selected for the MVP. Through a trusted server boundary, use

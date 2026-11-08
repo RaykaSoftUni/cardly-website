@@ -237,3 +237,14 @@ fieldset legend { font-size: var(--text-base); font-weight: 650; }
 .admin-path { overflow-wrap: anywhere; display: block; margin-bottom: .75rem; }
 .admin-table-scroll a:not(.btn) { color: #593987; }
 .page-main .btn-outline-danger { --bs-btn-color: #a52735; --bs-btn-border-color: #a52735; --bs-btn-hover-bg: #a52735; --bs-btn-hover-border-color: #a52735; --bs-btn-active-bg: #a52735; --bs-btn-active-border-color: #a52735; }
+.asset-controls { border: 0; min-width: 0; padding: 0; margin: 0; }
+.asset-drop-zone { border: 2px dashed #8063a4; border-radius: 18px; padding: 1.5rem; margin: 1.25rem 0; background: #f7f2fc; }
+.asset-drop-zone.is-dragging { background: #e8dbf6; border-style: solid; }
+.asset-primary { border: 3px solid #69439a; background: #f8f3ff; }
+.asset-primary .admin-asset-preview { height: 280px; }
+.asset-tile:not(.asset-primary) .admin-asset-preview { height: 180px; }
+.asset-placeholder { border: 1px dashed #8063a4; border-radius: 16px; padding: 3rem 1.25rem; text-align: center; color: #59466d; }
+.asset-selection .surface-panel { padding: 1.25rem; }
+.asset-manager details { margin: 1rem 0; }
+.asset-manager summary { cursor: pointer; color: #593987; font-weight: 600; margin-bottom: 1rem; }
+.asset-manager .selected-asset p { overflow-wrap: anywhere; }

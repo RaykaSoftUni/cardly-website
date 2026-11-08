@@ -108,3 +108,12 @@ test('direct admin URLs require authentication', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Administrator sign-in required' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Create card' })).toHaveCount(0);
 });
+
+test('catalogue uses its explicit primary image and falls back when none exists',async({page})=>{
+ let empty=false;
+ await page.route('**/rest/v1/rpc/get_card_catalogue',route=>route.fulfill({json:demoCards.map(c=>({...c,preview_assets:empty?[]:c.preview_assets.map(a=>({...a,is_primary:a.image_type==='preview'}))}))}));
+ await page.goto('/cards/');
+ await expect(page.locator('.catalog-card').first().locator('img')).toHaveAttribute('src','/demo-cards/birthday-type-preview.svg');
+ empty=true;await page.reload();
+ await expect(page.locator('.catalog-card .design-preview')).toHaveCount(10);
+});

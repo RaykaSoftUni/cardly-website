@@ -73,20 +73,25 @@ test('user administration hides self-role actions and support data stays metadat
   await expect(page.locator('table')).toContainText('Snapshot title');
   await expect(page.locator('table')).not.toContainText('password');
 });
-test('asset upload validates bytes, stores a unique path and saves alt text', async ({ page }) => {
+test('asset upload validates bytes, previews immediately and saves alt text', async ({ page }) => {
   const state = await mockAdmin(page);
   await page.goto('/admin/card-edit/?id=' + cardId);
-  await page.getByLabel('Image description / alt text').fill('Pink flowers around a birthday greeting');
-  await page.getByLabel('Image file').setInputFiles({ name: 'bad.png', mimeType: 'image/png', buffer: Buffer.from('not an image') });
-  await page.getByRole('button', { name: 'Upload image', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('contents do not match');
+  await page.getByLabel('Image files', {exact:true}).setInputFiles({ name:'bad.png',mimeType:'image/png',buffer:Buffer.from('not an image') });
+  await page.getByLabel('Selected image alt text').fill('Pink flowers around a birthday greeting');
+  await page.getByRole('button',{name:'Upload selected images',exact:true}).click();
+  await expect(page.locator('.admin-feedback')).toContainText('contents do not match');
   expect(state.uploads).toHaveLength(0);
-  await page.getByLabel('Image file').setInputFiles({ name: 'flower.png', mimeType: 'image/png', buffer: png });
-  await page.getByRole('button', { name: 'Upload image', exact: true }).click();
+  await expect(page.getByLabel('Selected image alt text')).toHaveValue('Pink flowers around a birthday greeting');
+  await page.getByRole('button',{name:'Discard selected image'}).click();
+  await page.getByLabel('Image files',{exact:true}).setInputFiles({name:'flower.png',mimeType:'image/png',buffer:png});
+  await expect(page.getByRole('img',{name:'Selected file preview: flower.png'})).toBeVisible();
+  await page.getByLabel('Selected image alt text').fill('Pink flowers around a birthday greeting');
+  await page.getByRole('button',{name:'Upload selected images',exact:true}).click();
   await expect(page.locator('.admin-feedback')).toContainText('Image saved.');
   expect(state.uploads).toHaveLength(1);
   expect(state.card_images[0].storage_path).toMatch(/^cards\/.+\/[a-f0-9-]+\.png$/);
   expect(state.card_images[0].alt_text).toContain('Pink flowers');
+  await expect(page.locator('.asset-primary')).toContainText('Primary catalogue preview');
 });
 test('role revocation removes open admin controls before a write', async ({ page }) => {
   const state = await mockAdmin(page);
@@ -110,4 +115,128 @@ test('authorized administration stays accessible and responsive', async ({ page 
   }
   await page.goto('/admin/card-edit/?id=' + cardId);
   await page.screenshot({ path: test.info().outputPath('admin-editor-desktop.png'), fullPage: true });
+});
+
+test('multiple files select a primary, reorder secondary images, replace and remove', async ({ page }) => {
+  const state = await mockAdmin(page);
+  await page.goto('/admin/card-edit/?id=' + cardId);
+  await page.getByLabel('Image files', {exact:true}).setInputFiles(['one','two','three'].map(name=>({name:name+'.png',mimeType:'image/png',buffer:png})));
+  await expect(page.locator('.selected-asset img')).toHaveCount(3);
+  for(let i=0;i<3;i++)await page.getByLabel('Selected image alt text').nth(i).fill(['First artwork','Second artwork','Third artwork'][i]);
+  await page.getByRole('button',{name:'Upload selected images',exact:true}).click();
+  await expect(page.locator('.asset-tile')).toHaveCount(3);
+  await expect(page.locator('.asset-primary')).toContainText('First artwork');
+  const second=page.locator('.asset-tile').filter({hasText:'Second artwork'});
+  await second.getByRole('button',{name:'Use as primary preview'}).click();
+  await expect(page.locator('.asset-primary')).toContainText('Second artwork');
+  await page.locator('.asset-tile').filter({hasText:'Third artwork'}).getByRole('button',{name:'Move image up'}).click();
+  await expect.poll(()=>state.writes.some(w=>w.entity==='admin_reorder_assets')).toBe(true);
+  const original=state.card_images.find(i=>i.alt_text==='Second artwork').storage_path;
+  const chooser=page.waitForEvent('filechooser');
+  await page.locator('.asset-primary').getByRole('button',{name:'Replace preview image'}).click();
+  await (await chooser).setFiles({name:'replacement.png',mimeType:'image/png',buffer:png});
+  await expect(page.getByLabel('Selected image alt text')).toHaveValue('Second artwork');
+  await page.getByRole('button',{name:'Upload selected images',exact:true}).click();
+  await expect.poll(()=>state.card_images.find(i=>i.alt_text==='Second artwork').storage_path).not.toBe(original);
+  await page.locator('.asset-tile').filter({hasText:'Third artwork'}).getByRole('button',{name:'Remove preview image'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Cancel'}).click();
+  expect(state.card_images).toHaveLength(3);
+  await page.locator('.asset-tile').filter({hasText:'Third artwork'}).getByRole('button',{name:'Remove preview image'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Confirm'}).click();
+  await expect(page.locator('.asset-tile')).toHaveCount(2);
+});
+test('new cards stage images and save them only after a card exists', async ({ page }) => {
+  const state=await mockAdmin(page);
+  await page.goto('/admin/card-edit/');
+  await expect(page.getByRole('heading',{name:'Images & Assets',exact:true})).toBeVisible();
+  await page.getByLabel('Card title').fill('A brand new card');
+  await page.getByLabel('Unique slug',{exact:false}).fill('brand-new-card');
+  await page.getByLabel('Image files',{exact:true}).setInputFiles({name:'staged.png',mimeType:'image/png',buffer:png});
+  await page.getByLabel('Selected image type').selectOption('hero');
+  await page.getByLabel('Selected image alt text').fill('A hero illustration for the new card');
+  expect(state.uploads).toHaveLength(0);
+  await page.getByRole('button',{name:'Save card',exact:true}).click();
+  await expect(page).toHaveURL(/admin\/card-edit\/\?id=/);
+  await expect(page.locator('.asset-primary')).toContainText('A hero illustration');
+  expect(state.card_images[0].card_id).toBe(state.cards.find(c=>c.slug==='brand-new-card').id);
+  expect(state.card_images[0].image_type).toBe('hero');
+});
+test('drag and drop previews files and upload size is configurable', async ({ page }) => {
+  const state=await mockAdmin(page);
+  await page.goto('/admin/card-edit/?id='+cardId);
+  await page.locator('.asset-drop-zone').evaluate((zone, bytes)=>{
+    const transfer=new DataTransfer();transfer.items.add(new File([new Uint8Array(bytes)],'dropped.png',{type:'image/png'}));
+    zone.dispatchEvent(new DragEvent('drop',{bubbles:true,cancelable:true,dataTransfer:transfer}));
+  },[...png]);
+  await expect(page.getByRole('img',{name:'Selected file preview: dropped.png'})).toBeVisible();
+  await page.getByLabel('Selected image alt text').fill('A dropped illustration');
+  await page.getByText('Upload settings',{exact:true}).click();
+  await page.getByLabel('Maximum upload size').fill('2');
+  await page.getByRole('button',{name:'Save upload limit'}).click();
+  await expect(page.locator('.asset-drop-zone')).toContainText('maximum 2 MiB');
+  expect(state.settings.max_bytes).toBe(2097152);
+  await page.getByRole('button',{name:'Upload selected images'}).click();
+  await expect(page.locator('.asset-primary')).toContainText('A dropped illustration');
+});
+test('staged images survive saves in other editor sections', async ({ page }) => {
+  await mockAdmin(page);
+  await page.goto('/admin/card-edit/?id='+cardId);
+  await page.getByLabel('Image files',{exact:true}).setInputFiles({name:'keep.png',mimeType:'image/png',buffer:png});
+  await page.getByLabel('Selected image alt text').fill('Keep this unsaved artwork');
+  await page.getByLabel('Layout configuration').fill('{"regions":[],"image_regions":[]}');
+  await page.getByRole('button',{name:'Save template revision'}).click();
+  await expect(page.locator('.admin-feedback')).toContainText('Template saved');
+  await expect(page.getByLabel('Selected image alt text')).toHaveValue('Keep this unsaved artwork');
+  await expect(page.getByRole('img',{name:'Selected file preview: keep.png'})).toBeVisible();
+});
+
+test('a failed staged upload can retry without creating a second card',async({page})=>{
+ const state=await mockAdmin(page);
+ await page.goto('/admin/card-edit/');
+ await page.getByLabel('Card title').fill('Retry artwork card');
+ await page.getByLabel('Unique slug',{exact:false}).fill('retry-artwork-card');
+ await page.getByLabel('Image files',{exact:true}).setInputFiles({name:'invalid.png',mimeType:'image/png',buffer:Buffer.from('not a real image')});
+ await page.getByLabel('Selected image alt text').fill('Keep the new card data');
+ await page.getByRole('button',{name:'Save card',exact:true}).click();
+ await expect(page.getByRole('alert')).toContainText('contents do not match');
+ expect(state.cards.filter(c=>c.slug==='retry-artwork-card')).toHaveLength(1);
+ await expect(page.getByLabel('Card title')).toHaveValue('Retry artwork card');
+ await page.getByRole('button',{name:'Discard selected image'}).click();
+ await page.getByLabel('Image files',{exact:true}).setInputFiles({name:'valid.png',mimeType:'image/png',buffer:png});
+ await page.getByLabel('Selected image alt text').fill('A valid retry illustration');
+ await page.getByRole('button',{name:'Save card',exact:true}).click();
+ await expect(page).toHaveURL(/admin\/card-edit\/\?id=/);
+ expect(state.cards.filter(c=>c.slug==='retry-artwork-card')).toHaveLength(1);
+ await expect(page.locator('.asset-primary')).toContainText('A valid retry illustration');
+});
+test('oversized images are rejected before uploading and keep their descriptions',async({page})=>{
+ const state=await mockAdmin(page);state.settings.max_bytes=1048576;
+ await page.goto('/admin/card-edit/?id='+cardId);
+ await page.getByLabel('Image files',{exact:true}).setInputFiles({name:'large.png',mimeType:'image/png',buffer:Buffer.concat([png,Buffer.alloc(1048576)])});
+ await page.getByLabel('Selected image alt text').fill('A large selected image');
+ await page.getByRole('button',{name:'Upload selected images',exact:true}).click();
+ await expect(page.locator('.admin-feedback')).toContainText('up to 1 MiB');
+ expect(state.uploads).toHaveLength(0);
+ await expect(page.getByLabel('Selected image alt text')).toHaveValue('A large selected image');
+});
+
+test('partially uploaded new-card images stay editable while failed files are queued',async({page})=>{
+ const state=await mockAdmin(page);
+ await page.goto('/admin/card-edit/');
+ await page.getByLabel('Card title').fill('Partial upload card');
+ await page.getByLabel('Unique slug',{exact:false}).fill('partial-upload-card');
+ await page.getByLabel('Image files',{exact:true}).setInputFiles([{name:'good.png',mimeType:'image/png',buffer:png},{name:'bad.png',mimeType:'image/png',buffer:Buffer.from('bad')}]);
+ await page.getByLabel('Selected image alt text').nth(0).fill('The successful image');
+ await page.getByLabel('Selected image alt text').nth(1).fill('The queued failed image');
+ await page.getByRole('button',{name:'Save card',exact:true}).click();
+ await expect(page.getByRole('alert')).toContainText('contents do not match');
+ await expect(page.locator('.asset-tile')).toHaveCount(1);
+ await expect(page.getByRole('button',{name:'Upload selected images'})).toBeVisible();
+ await page.getByText('Edit preview image details',{exact:true}).click();
+ await page.getByLabel('Image description / alt text').fill('A corrected description');
+ await page.getByRole('button',{name:'Save image details'}).click();
+ await expect(page.locator('.asset-tile')).toContainText('A corrected description');
+ const last=state.writes.filter(w=>w.entity==='admin_save_card_asset').at(-1);
+ expect(last.args.p_card_id).toBe(state.cards.find(c=>c.slug==='partial-upload-card').id);
+ await expect(page.getByLabel('Selected image alt text')).toHaveValue('The queued failed image');
 });
