@@ -5,6 +5,7 @@ import { createHeader } from '../components/layout/header.js';
 import { confirmDialog } from '../components/feedback/confirm-dialog.js';
 import * as admin from '../services/admin-service.js';
 import { createAssetManager } from '../components/admin/asset-manager.js';
+import { showPageLoading, finishPageLoading, createPageLoading } from '../components/feedback/page-loading.js';
 
 const yesNo = [{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }];
 const option = (value, label = value) => ({ value, label });
@@ -36,6 +37,7 @@ function nav() {
 }
 function denied(main, context) {
   cleanup();
+  finishPageLoading(main);
   main.replaceChildren(intro(context?.user ? 'Administrator access required' : 'Administrator sign-in required', 'This area requires an authenticated account with the database Admin role.'),
     button({ label: 'Sign in', href: `/login/?next=${encodeURIComponent(location.pathname + location.search)}` }), button({ label: 'Public catalog', href: '/cards/', variant: 'quiet' }));
   document.querySelector('header').replaceWith(createHeader({ authenticated: Boolean(context?.user), onLogout: async () => { await admin.logoutAdmin(); location.assign('/login/'); } }));
@@ -53,10 +55,10 @@ function confirmRemoval(title, message) {
 }
 export async function renderAdminPage(main, pageId) {
   subscription?.unsubscribe(); cleanup();
-  main.replaceChildren(el('p', { role: 'status' }, 'Checking administrator access…'));
+  showPageLoading(main);
   let context;
   try { context = await admin.adminContext(); }
-  catch { main.replaceChildren(intro('Authorization check unavailable', 'Please try again when the connection is restored.'), button({ label: 'Try again', onClick: () => renderAdminPage(main, pageId) })); return; }
+  catch { main.replaceChildren(intro('Authorization check unavailable', 'Please try again when the connection is restored.'), button({ label: 'Try again', onClick: () => renderAdminPage(main, pageId) })); finishPageLoading(main); return; }
   if (!context.isAdmin) return denied(main, context);
   document.querySelector('header').replaceWith(createHeader({ pageId, authenticated: true, isAdmin: true, onLogout: async () => { await admin.logoutAdmin(); location.assign('/login/'); } }));
   subscription = admin.watchAdminLogout(() => denied(main, null));
@@ -66,8 +68,7 @@ export async function renderAdminPage(main, pageId) {
   let assetManager;
   cleanup = () => { assetManager?.destroy(); window.removeEventListener('focus', verify); for (const url of objectUrls) URL.revokeObjectURL(url); };
   const feedback = el('p', { className: 'admin-feedback', role: 'status', 'aria-live': 'polite' });
-  const content = el('div');
-  main.replaceChildren(nav(), feedback, content);
+  const content = el('div', {}, createPageLoading());
   const success = message => { feedback.textContent = message; feedback.classList.remove('text-danger'); };
   const fail = error => { feedback.textContent = admin.adminError(error); feedback.classList.add('text-danger'); if (error.code === '42501') verify(); };
   const guarded = (label, action, { destructive = false, message = '' } = {}) => button({ label, variant: destructive ? 'outline-danger' : 'outline-primary', onClick: async event => {
@@ -125,6 +126,7 @@ export async function renderAdminPage(main, pageId) {
     if (!stagedAssets) assetManager?.destroy();
     const id = new URLSearchParams(location.search).get('id');
     const [card, categories, occasions, settings] = await Promise.all([id ? admin.getAdminCard(id) : null, admin.listAdminData('categories'), admin.listAdminData('occasions'), admin.assetSettings()]);
+    const [templates, definitions, images] = card ? await Promise.all([admin.listAdminData('card_templates', id), admin.listAdminData('personalization_fields', id), admin.listAdminData('card_images', id)]) : [[], [], []];
     let savedId = card?.id;
     const fields = [
       { name: 'title', label: 'Card title', required: true, value: card?.title || '' },
@@ -160,7 +162,7 @@ export async function renderAdminPage(main, pageId) {
     pricing.addEventListener('change', reflectPricing); reflectPricing();
     content.replaceChildren(intro(card ? `Edit ${card.title}` : 'Create a card', 'Publication, pricing and availability are enforced by the database.'), el('section', { className: 'surface-panel' }, form.element));
     if (!card) { assetManager = stagedAssets || assetsEditor({ id: null }, [], settings); content.append(assetManager.element, el('p', { className: 'field-hint mt-3' }, 'Selected images upload when you save the card. Configure the template and personalization fields afterward.')); return; }
-    const [templates, definitions, images] = await Promise.all([admin.listAdminData('card_templates', id), admin.listAdminData('personalization_fields', id), admin.listAdminData('card_images', id)]);
+
     assetManager = stagedAssets || assetsEditor(card, images, settings);
     content.append(templateEditor(card, templates[0]), fieldsEditor(card, definitions), assetManager.element);
   }
@@ -254,5 +256,11 @@ export async function renderAdminPage(main, pageId) {
     else if (pageId === 'admin-users') await users();
     else if (new URLSearchParams(location.search).get('view') === 'generations') await generations();
     else content.replaceChildren(intro('Administration workspace', 'Manage catalog content and permissions through authorized database operations.'), el('p', {}, 'Choose Cards to manage templates, fields and artwork; Categories or Occasions to manage discovery; Users and roles to manage access. Generation metadata provides a limited support view.'));
-  } catch (error) { fail(error); }
+  } catch (error) { fail(error); if (content.querySelector('.page-loading')) content.replaceChildren(intro('Administration unavailable', 'Please retry when the connection is restored.')); }
+  finally {
+    // Keep the initial shell until the complete admin view is ready. A logout or
+    // failed role recheck clears aria-busy, so it cannot restore privileged UI.
+    if (main.getAttribute('aria-busy') === 'true') main.replaceChildren(nav(), feedback, content);
+    finishPageLoading(main);
+  }
 }

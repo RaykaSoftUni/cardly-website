@@ -299,6 +299,22 @@ docs/card-assets.md. The standalone SQL suite and follow-up remote checksum chec
 are pending because MCP OAuth refresh failed after migration application, including
 after reconnection. No privileged credentials or new dependencies were introduced.
 
+## Milestone 7B — Stable page loading (completed)
+
+Authorized by the request to remove jumping during page navigation. All 17 HTML
+entries load shared styles from the head and start with the same branded/loading
+shell. Removed the flash of old placeholder copy, reserved scrollbar space and
+icon widths, kept loading footers below the first viewport, and deferred navigation
+until session/role resolution. Catalog and admin views replace their loading shell
+only when their initial content is ready. Reduced motion and accessible busy/error
+states are supported; no content fade reduces text contrast.
+
+Verification: all 37 browser tests pass, including JavaScript delayed while CSS
+loads normally, delayed data, desktop/mobile header geometry, scrollbar alignment, ordinary
+document navigation, admin gating, failed-load recovery and reduced motion. The
+production build, all 17 production route checks and a real development-server
+catalog/CSS check pass. No database/schema or authorization changes were made.
+
 ## Milestone 8 — Optional AI greeting generation
 
 Implement only if selected for the MVP. Through a trusted server boundary, use

@@ -92,6 +92,14 @@ to public URLs: `/`, `/cards/`, and `/admin/cards/` still load directly.
 
 ## Browser UI checks
 
+Page styles load directly through each HTML entry's `src/styles/entry.css` link,
+so the branded shell is styled before page JavaScript arrives. Accessible loading
+skeletons keep the header and page geometry stable while sessions/data resolve.
+Navigation appears after the session/role check, and catalog/admin views are
+assembled before they replace the loading state. Scrollbar space is reserved to
+avoid sideways shifts between short and long pages. Reduced-motion preferences
+disable skeleton animation. Navigation still loads genuine separate HTML documents.
+
 After building, install a Playwright browser and run the UI checks:
 
 ```sh

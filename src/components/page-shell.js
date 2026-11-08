@@ -1,26 +1,24 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import '../styles/main.css';
+import { showPageLoading, finishPageLoading, pageLoadError } from './feedback/page-loading.js';
 import { createHeader } from './layout/header.js';
 import { createFooter } from './layout/footer.js';
 import { mountToastContainer } from './feedback/toast.js';
 import { renderDesignPage } from '../pages/design-pages.js';
+const connectedPages = new Set(['home', 'cards', 'category', 'categories', 'card', 'card-editor', 'card-preview', 'login', 'my-cards']);
 
 export function initializePage(pageId) {
-  document.querySelector('header').replaceWith(createHeader({ pageId }));
+  if (!pageId.startsWith('admin') && !connectedPages.has(pageId)) document.querySelector('header').replaceWith(createHeader({ pageId }));
   const main = document.querySelector('main');
   main.className = 'page-container page-main';
+  showPageLoading(main);
   if (pageId.startsWith('admin')) {
-    main.textContent = 'Checking administrator access…';
     import('../pages/admin-pages.js').then(({ renderAdminPage }) => renderAdminPage(main, pageId)).catch(() => {
-      main.textContent = 'Administrator access could not be checked. Please sign in and try again.';
+      pageLoadError(main, 'Administrator access could not be checked. Please sign in and try again.');
     });
-  } else if (['home', 'cards', 'category', 'categories', 'card', 'card-editor', 'card-preview', 'login', 'my-cards'].includes(pageId)) {
-    main.textContent = 'Loading Cardly…';
+  } else if (connectedPages.has(pageId)) {
     import('../pages/catalog-pages.js').then(({ renderCatalogPage }) => renderCatalogPage(main, pageId)).catch(() => {
-      main.textContent = 'Cardly could not connect. Check the Supabase configuration and try again.';
+      pageLoadError(main, 'Cardly could not connect. Check the Supabase configuration and try again.');
     });
-  } else renderDesignPage(main, pageId);
+  } else { renderDesignPage(main, pageId); finishPageLoading(main); }
   document.querySelector('footer')?.remove();
   document.body.append(createFooter());
   mountToastContainer();

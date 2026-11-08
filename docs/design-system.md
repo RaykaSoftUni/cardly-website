@@ -8,6 +8,15 @@ fonts; there are no third-party image or font requests.
 
 ## Tokens and layout
 
+All HTML entries now link `src/styles/entry.css` directly in the head; it imports
+Bootstrap, icons and the shared styles before the first content paint. The initial
+HTML has a branded header and accessible loading shell instead of placeholder
+feature copy. `feedback/page-loading.js` shares that shell with asynchronous page
+renderers, sets/clears `aria-busy`, and keeps failed loads recoverable. Header roles
+resolve before navigation is shown. Content remains at full contrast rather than
+fading text, and reduced motion disables skeleton shimmer. Normal document
+navigation and protected admin checks are preserved.
+
 `src/styles/tokens.css` defines semantic colours, font families and sizes, spacing,
 border width, radii, shadows, page width and UI motion. `main.css` implements the
 shared layouts, controls, breakpoints, focus indicators and reduced-motion rules.

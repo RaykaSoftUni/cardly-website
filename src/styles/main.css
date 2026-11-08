@@ -248,3 +248,24 @@ fieldset legend { font-size: var(--text-base); font-weight: 650; }
 .asset-manager details { margin: 1rem 0; }
 .asset-manager summary { cursor: pointer; color: #593987; font-weight: 600; margin-bottom: 1rem; }
 .asset-manager .selected-asset p { overflow-wrap: anywhere; }
+
+/* Stable document geometry, including the first paint before modules load. */
+html { scrollbar-gutter: stable; }
+@supports not (scrollbar-gutter: stable) { html { overflow-y: scroll; } }
+body { display: flex; flex-direction: column; min-height: 100svh; }
+.site-header, .site-footer { flex-shrink: 0; }
+.page-main { flex: 1; }
+body[data-page-loading='true'] .page-main { min-height: calc(100svh - 92px); }
+.brand > .bi, .btn > .bi { width: 1em; flex: 0 0 1em; }
+.header-loading-links { width: min(28rem, 55vw); height: 46px; }
+.loading-intro { padding-block: var(--space-8) var(--space-6); }
+.loading-eyebrow { width: 12rem; max-width: 60%; height: .75rem; margin-bottom: 1rem; }
+.loading-title { width: 34rem; max-width: 85%; height: clamp(2.5rem, 4vw, 4rem); margin-bottom: 1rem; }
+.loading-description { width: 30rem; max-width: 75%; height: 1.125rem; }
+.loading-art { aspect-ratio: 3 / 4; }
+@media (max-width: 767px) {
+  body[data-page-loading='true'] .page-main { min-height: calc(100svh - 76px); }
+  .loading-intro { padding-top: var(--space-7); }
+  .header-loading-links { width: 5rem; }
+}
+@media (prefers-reduced-motion: reduce) { .page-ready { animation: none; } }
