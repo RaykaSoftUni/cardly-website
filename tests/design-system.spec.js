@@ -102,8 +102,9 @@ for (const route of ['/', '/cards/', '/card-editor/', '/login/', '/admin/card-ed
   });
 }
 
-test('reduced motion disables skeleton animation', async ({ page }) => {
+test('direct admin URLs require authentication', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/admin/cards/');
-  expect(await page.locator('.skeleton').first().evaluate((node) => getComputedStyle(node).animationName)).toBe('none');
+  await expect(page.getByRole('heading', { name: 'Administrator sign-in required' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Create card' })).toHaveCount(0);
 });

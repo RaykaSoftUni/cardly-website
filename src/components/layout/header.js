@@ -1,20 +1,20 @@
 import { el, uniqueId } from '../../utils/dom.js';
 import { button, icon } from '../ui.js';
 
-// Future integration must supply verified session state and a real logout callback.
-// Admin navigation is deliberately not rendered until role checking is implemented.
+// Callers supply a role verified through the protected database role table.
 export const futureAdminNavigation = Object.freeze([
   { label: 'Cards Management', href: '/admin/cards/' },
   { label: 'Categories', href: '/admin/categories/' },
   { label: 'Users', href: '/admin/users/' },
 ]);
 
-export function createHeader({ pageId, authenticated = false, onLogout } = {}) {
+export function createHeader({ pageId, authenticated = false, isAdmin = false, onLogout } = {}) {
   const menuId = uniqueId('site-menu');
   const nav = el('nav', { className: 'site-nav', id: menuId, 'aria-label': 'Main navigation' });
   const links = authenticated
     ? [['Home', '/', 'home'], ['Cards', '/cards/', 'cards'], ['My Cards', '/my-cards/', 'my-cards'], ['Saved Cards', '/my-cards/?view=saved', 'saved-cards'], ['Account', '/account/', 'account']]
     : [['Home', '/', 'home'], ['Cards', '/cards/', 'cards'], ['Login', '/login/', 'login'], ['Register', '/register/', 'register']];
+  if (authenticated && isAdmin) links.push(['Admin', '/admin/', 'admin']);
   const list = el('ul', { className: 'navigation-list' });
   for (const [label, href, id] of links) list.append(el('li', {}, el('a', {
     href, className: id === 'register' ? 'nav-register' : '', 'aria-current': id === pageId ? 'page' : null,

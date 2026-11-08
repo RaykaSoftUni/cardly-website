@@ -7,6 +7,8 @@ import { emptyState } from '../components/feedback/states.js';
 import { catalog,cardDetail,rpc } from '../services/catalog-service.js';
 import { supabaseClient } from '../services/supabase-client.js';
 import { createHeader } from '../components/layout/header.js';
+import { adminContext } from '../services/admin-service.js';
+import { publicAssetUrl } from '../services/media-service.js';
 const intro=(title,description)=>el('div',{className:'page-intro'},[el('p',{className:'eyebrow'},'The fictional Cardly collection'),el('h1',{},title),el('p',{className:'lead muted'},description)]);
 const notice=()=>el('p',{className:'sample-notice'},'Demo collection · Original fictional designs. Generation saves a preview job; final image export is not connected.');
 const eligible=c=>c.is_available&&c.pricing_type==='free';
@@ -14,8 +16,14 @@ const status=c=>priceAndAvailability({paid:c.pricing_type==='paid',price:c.price
 const params=()=>new URLSearchParams(location.search);
 function returnQuery(){const p=params();p.delete('id');return p.toString();}
 function link(path,id,query=returnQuery()){const p=new URLSearchParams(query);if(id)p.set('id',id);return `${path}${p.size?'?'+p:''}`;}
+function artwork(c,size='thumb') {
+ const holder=el('div',{},createDemoArtwork(c,size));
+ const asset=c.preview_assets?.find(a=>a.image_type===(size==='thumb'?'thumbnail':'preview'));
+ if(asset&&!asset.storage_path.startsWith('demo-cards/'))publicAssetUrl(asset.storage_path).then(url=>holder.replaceChildren(createDemoArtwork(c,size,url))).catch(()=>{});
+ return holder;
+}
 function tile(c,query=''){
- return el('article',{className:'catalog-card'},[el('a',{href:link('/card/',c.id,query),'aria-label':`View ${c.title}`},createDemoArtwork(c)),el('div',{className:'catalog-card-body'},[
+ return el('article',{className:'catalog-card'},[el('a',{href:link('/card/',c.id,query),'aria-label':`View ${c.title}`},artwork(c)),el('div',{className:'catalog-card-body'},[
  el('p',{className:'eyebrow'},`${c.occasion?.name||'Greeting'} · ${c.style||'Original'}`),el('h2',{className:'h4'},el('a',{href:link('/card/',c.id,query)},c.title)),el('p',{className:'muted small'},c.category?.name||''),status(c),button({label:eligible(c)?'Personalize':'View Card',href:link(eligible(c)?'/card-editor/':'/card/',c.id,query),variant:'outline-primary'})])]);
 }
 async function browse(main,pageId){
@@ -63,7 +71,7 @@ async function detail(main,pageId){
  const query=returnQuery();
  const back=el('a',{href:link('/cards/',null,query),className:'d-inline-block mb-4'},'← Back to your cards');
  if(pageId==='card'){
-  main.replaceChildren(back,intro(c.title,c.description),notice(),el('div',{className:'editor-layout'},[createDemoArtwork(c,'preview'),el('section',{className:'surface-panel'},[el('p',{className:'eyebrow'},`${c.occasion?.name||''} · ${c.category?.name||''} · ${c.style||''}`),el('h2',{},'Make it personal'),status(c),el('p',{},'Personalize: '+c.personalization_fields.map(f=>f.label.toLowerCase()).join(', ')+'.'),button({label:eligible(c)?'Personalize':'Currently unavailable',href:link('/card-editor/',c.id,query),disabled:!eligible(c)}),el('p',{className:'field-hint mt-3'},c.pricing_type==='paid'?'EUR price shown for reference. Purchasing is not available.':'Preview your words before saving. Sign in to save your own draft.')])]));return;
+  main.replaceChildren(back,intro(c.title,c.description),notice(),el('div',{className:'editor-layout'},[artwork(c,'preview'),el('section',{className:'surface-panel'},[el('p',{className:'eyebrow'},`${c.occasion?.name||''} · ${c.category?.name||''} · ${c.style||''}`),el('h2',{},'Make it personal'),status(c),el('p',{},'Personalize: '+c.personalization_fields.map(f=>f.label.toLowerCase()).join(', ')+'.'),button({label:eligible(c)?'Personalize':'Currently unavailable',href:link('/card-editor/',c.id,query),disabled:!eligible(c)}),el('p',{className:'field-hint mt-3'},c.pricing_type==='paid'?'EUR price shown for reference. Purchasing is not available.':'Preview your words before saving. Sign in to save your own draft.')])]));return;
  }
  if(!eligible(c))return main.replaceChildren(back,intro('Personalization unavailable','Choose a published, available free card.'),status(c));
  const savedKey=`cardly-demo-input:${id}`;
@@ -98,7 +106,8 @@ async function login(main){
  const form=createForm({fields:[{name:'email',label:'Email address',type:'email',required:true},{name:'password',label:'Password',type:'password',required:true}],submitLabel:'Sign in',description:'Use an account configured in this Supabase project. Demo passwords are never published.',onSubmit:async values=>{
   const {error}=await supabaseClient.auth.signInWithPassword(values);
   if(error){feedback.textContent='Sign-in failed. Check your account and password.';return;}
-  location.assign('/my-cards/');
+  const next=new URL(params().get('next')||'/my-cards/',location.origin);
+  location.assign(next.origin===location.origin&&next.pathname.startsWith('/admin/')?next.pathname+next.search:'/my-cards/');
  }});
  main.replaceChildren(intro('Good to see you.','Sign in to keep your personal cards.'),el('section',{className:'auth-panel surface-panel'},[form.element,feedback]));
 }
@@ -114,7 +123,7 @@ async function collection(main){
 export async function renderCatalogPage(main,pageId){
  main.replaceChildren(el('p',{role:'status'},'Loading Cardly…'));
  const {data:{session}}=await supabaseClient.auth.getSession();
- if(session)document.querySelector('header').replaceWith(createHeader({pageId,authenticated:true,onLogout:async()=>{await supabaseClient.auth.signOut();location.assign('/login/');}}));
+ if(session){const context=await adminContext();document.querySelector('header').replaceWith(createHeader({pageId,authenticated:true,isAdmin:context.isAdmin,onLogout:async()=>{await supabaseClient.auth.signOut();location.assign('/login/');}}));}
  try{if(['home','cards','category','categories'].includes(pageId))await browse(main,pageId);else if(pageId==='login')await login(main);else if(pageId==='my-cards')await collection(main);else await detail(main,pageId);}
  catch{main.replaceChildren(intro('We could not load this page.','Check your connection and Supabase configuration, then try again.'),button({label:'Try again',onClick:()=>renderCatalogPage(main,pageId)}));}
 }

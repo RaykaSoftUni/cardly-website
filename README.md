@@ -5,7 +5,7 @@ Repository: [RaykaSoftUni/cardly-website](https://github.com/RaykaSoftUni/cardly
 Multi-page greeting card application with a fictional Supabase-backed catalog,
 server-side filters, distinct SVG designs, per-card personalization previews,
 password sign-in, owned drafts and generation placeholders. AI, photo uploads,
-payments, final image exports, sharing, registration UI and admin UI remain
+payments, final image exports, sharing and registration UI remain
 unconnected. The 17 HTML entries retain shared components. See
 [the design system guide](docs/design-system.md) for component interfaces.
 
@@ -36,6 +36,9 @@ for seeded accounts, password setup and local artwork.
 The [generation API](docs/generation-api.md) documents public catalogue/detail,
 validated private drafts, transactional generation jobs and admin RPCs. Rendering
 jobs require a trusted worker; no image renderer is deployed by the SQL workflow.
+Database admins can manage cards, template revisions, fields, categories/occasions,
+Storage assets and user roles at `/admin/`. See [administration](docs/administration.md)
+for permissions, support-data limits, historical asset retention and verification.
 
 ## Production verification
 

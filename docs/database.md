@@ -1,5 +1,10 @@
 # Database and Storage foundation
 
+The subsequent [protected administration](administration.md) milestone adds checked
+role changes, limited account/support listings, validated configuration management
+and Storage retention rules. That guide documents the current admin permissions;
+the foundation below records the original milestone.
+
 The foundation below records milestone 2. The subsequent
 [generation API](generation-api.md) adds a third migration, immutable template
 history (a twelfth RLS-protected table), RPC-only public projections and validated

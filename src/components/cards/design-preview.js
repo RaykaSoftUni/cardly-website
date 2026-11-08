@@ -10,11 +10,11 @@ export function createDesignPreview(key, values = {}) {
  render();
  return { element:root, update(next) { values={...next}; render(); } };
 }
-export function createDemoArtwork(card, size='thumb') {
+export function createDemoArtwork(card, size='thumb', imageUrl=null) {
  const fallback = createDesignPreview(card.design_key).element;
  const asset = card.preview_assets?.find(a=>a.image_type===(size==='thumb'?'thumbnail':'preview'));
- if (!asset || !/^demo-cards\/[a-z0-9-]+-(thumb|preview)\.svg$/.test(asset.storage_path)) return fallback;
- const image = el('img', { className:'design-art', src:`/${asset.storage_path}`, alt:asset.alt_text, width:600,height:800,loading:'lazy' });
+ if (!asset || (!imageUrl && !/^demo-cards\/[a-z0-9-]+-(thumb|preview)\.svg$/.test(asset.storage_path))) return fallback;
+ const image = el('img', { className:'design-art', src:imageUrl || `/${asset.storage_path}`, alt:asset.alt_text, width:600,height:800,loading:'lazy' });
  image.addEventListener('error',()=>image.replaceWith(fallback),{once:true});
  return image;
 }

@@ -256,7 +256,23 @@ verify unauthorized access and unavailable paid cards remain blocked. Check that
 reopened cards preserve their personalization. PDF, favorites, duplication, and
 recently viewed history are optional follow-up scope.
 
-## Milestone 7 — Protected catalog administration
+## Milestone 7 — Protected catalog administration (completed)
+
+Authorized by the explicit admin-management request. Connected all existing admin
+HTML entries to verified Auth/database roles, catalog forms/actions, automatic
+template revisions, field management/reordering, categories/occasions, private
+Storage asset operations, basic user/role administration and metadata-only support.
+The database independently rejects unauthorized operations and self-role changes.
+New assets use immutable paths, and referenced historical files/snapshots survive
+configuration changes. Paid cards remain unavailable. See docs/administration.md.
+
+Applied four migrations beginning with `20261108094019_protected_admin_management`
+and ending with `20261108100015_available_card_template_integrity`; local SQL
+checksums match remote history. All four SQL suites, 23 browser tests, production
+build and 17 route checks pass. Live tests exercised actual admin login and Storage
+upload/replacement/privacy/deletion with temporary fixtures cleaned up. Advisor
+notices for intentional definer RPCs and existing disabled leaked-password
+protection are documented. No Auth password policy was changed.
 
 Implement create/edit/archive, publish/unpublish, availability, free/paid settings,
 EUR pricing, preview uploads/replacement, category/occasion assignment, title,

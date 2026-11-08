@@ -10,7 +10,12 @@ export function initializePage(pageId) {
   document.querySelector('header').replaceWith(createHeader({ pageId }));
   const main = document.querySelector('main');
   main.className = 'page-container page-main';
-  if (['home', 'cards', 'category', 'categories', 'card', 'card-editor', 'card-preview', 'login', 'my-cards'].includes(pageId)) {
+  if (pageId.startsWith('admin')) {
+    main.textContent = 'Checking administrator access…';
+    import('../pages/admin-pages.js').then(({ renderAdminPage }) => renderAdminPage(main, pageId)).catch(() => {
+      main.textContent = 'Administrator access could not be checked. Please sign in and try again.';
+    });
+  } else if (['home', 'cards', 'category', 'categories', 'card', 'card-editor', 'card-preview', 'login', 'my-cards'].includes(pageId)) {
     main.textContent = 'Loading Cardly…';
     import('../pages/catalog-pages.js').then(({ renderCatalogPage }) => renderCatalogPage(main, pageId)).catch(() => {
       main.textContent = 'Cardly could not connect. Check the Supabase configuration and try again.';

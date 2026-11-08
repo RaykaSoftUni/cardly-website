@@ -67,8 +67,9 @@ explicitly labels placeholder behavior. The jobs remain `processing`, with no
 fabricated image paths or completed exports. Ownership policies isolate all three
 accounts, including the admin's personal records.
 
-No emails were sent and no shared password exists. Seeded passwords are **unset**;
-these identities cannot sign in until a trusted operator configures passwords.
+No emails were sent. The seed initially left passwords unset; they were subsequently
+configured at the user's request through trusted administration, and login was
+verified. Credentials are not recorded in this guide or the repository.
 The account seed is optional environment data, separate from schema migrations.
 Re-running preserves saved examples and explicitly restores the listed demo roles.
 It refuses to modify an existing non-demo account with one of those email addresses.
@@ -88,9 +89,8 @@ Then run `npm run demo:configure-accounts`. The trusted Node script uses the
 official Auth admin API, verifies the demo marker, configures passwords and never
 prints credentials. Keep this file ignored and restrict its filesystem access.
 Never put the service key or passwords in `VITE_` variables, browser modules or
-commits. This password setup has not been run because operator credentials and
-chosen passwords were not supplied. Alternatively configure these accounts through
-your own trusted Auth administration process.
+commits. The setup script remains an optional way to reset these passwords;
+the initial passwords were configured separately through trusted administration.
 
 ## Connected pages
 
@@ -110,9 +110,10 @@ saving calls the authenticated draft RPC. Before generation, the latest form dat
 is saved and revalidated server-side. A success creates a labelled demo job, not an
 image download. My Cards shows only owned drafts and snapshot-based previews.
 
-Password login and logout are connected. Registration and profile/admin screens
-remain UI placeholders. Admin navigation stays hidden; database role checks remain
-authoritative. No final renderer, payments, AI provider or user-photo pipeline is
+Password login/logout and [protected administration](administration.md) are connected.
+Registration and profile screens remain placeholders. Admin navigation is shown
+only after a verified role check; database authorization remains authoritative.
+No final renderer, payments, AI provider or user-photo pipeline is
 introduced by this milestone.
 
 ## Verification

@@ -225,3 +225,15 @@ fieldset legend { font-size: var(--text-base); font-weight: 650; }
 .editor-layout .btn + .btn { margin: .5rem; }
 .catalog-card-body h2 a { color: var(--text, #302936); text-decoration: none; }
 .catalog-card-body h2 a:hover { text-decoration: underline; }
+
+.admin-navigation, .admin-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem; }
+.admin-navigation .btn, .admin-actions .btn { font-size: .85rem; padding: .5rem .75rem; }
+.admin-table-scroll { max-width: 100%; overflow-x: auto; margin: 1.5rem 0; }
+.admin-table-scroll table { min-width: 600px; }
+.admin-table-scroll td { max-width: 300px; overflow-wrap: anywhere; }
+.admin-feedback { min-height: 1.5rem; margin-top: 1rem; }
+.admin-assets-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 1rem; margin-bottom: 1rem; }
+.admin-asset-preview { display: block; width: 100%; height: 220px; object-fit: contain; }
+.admin-path { overflow-wrap: anywhere; display: block; margin-bottom: .75rem; }
+.admin-table-scroll a:not(.btn) { color: #593987; }
+.page-main .btn-outline-danger { --bs-btn-color: #a52735; --bs-btn-border-color: #a52735; --bs-btn-hover-bg: #a52735; --bs-btn-hover-border-color: #a52735; --bs-btn-active-bg: #a52735; --bs-btn-active-border-color: #a52735; }

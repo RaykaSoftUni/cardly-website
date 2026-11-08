@@ -66,6 +66,7 @@ export function createForm({ fields, submitLabel = 'Update preview', onSubmit, o
   });
   return {
     element: form, values, validate,
+    setError(message) { summary.textContent = message; summary.hidden = !message; if (message) summary.focus(); },
     setErrors(errors) { for (const control of controls) control.setError(errors[control.name]); },
     reset() { form.reset(); for (const control of controls) control.setError(); summary.hidden = true; onChange?.(values()); },
   };

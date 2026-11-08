@@ -66,9 +66,10 @@ administrative role. Admins have user permissions where applicable and may:
 - Review generated-card records when required for administration.
 - Perform supported user administration and access data necessary for support.
 
-Catalog administration is enforced by RLS. User administration and review of
-private records require trusted server operations and are not granted to admin
-browser clients. Scope sensitive record access to an administrative need.
+Catalog administration is enforced by RLS. Trusted RPCs now let admins list basic
+accounts and change another user's role. The support view returns generation
+metadata without private messages, images or download paths. See
+[administration](administration.md) for the enforced boundaries.
 
 ## Database enforcement
 
