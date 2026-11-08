@@ -67,6 +67,8 @@ Committed SQL migrations are in `supabase/migrations/`.
   nested public pages; `pages/admin/` contains the admin HTML entries.
 - `dist/` contains generated production files and is a sibling of `pages/`,
   `docs/`, `src/`, `scripts/`, and `supabase/`.
+- `public/favicon.ico` is the shared browser icon (16/32/48/64 px); its editable
+  vector source is `public/favicon.svg`, based on Bootstrap Icons' envelope-heart mark.
 - `src/pages/` contains one module per page and a shared entry manifest.
 - `src/components/` contains modular layouts, cards, forms and feedback components.
 - `src/styles/` contains shared styles, alongside Bootstrap's imported CSS.

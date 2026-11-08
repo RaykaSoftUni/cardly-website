@@ -315,6 +315,13 @@ document navigation, admin gating, failed-load recovery and reduced motion. The
 production build, all 17 production route checks and a real development-server
 catalog/CSS check pass. No database/schema or authorization changes were made.
 
+## Milestone 7C — Browser favicon (completed)
+
+Added the requested multi-resolution Cardly `.ico` favicon, using the existing
+plum envelope/heart identity, with an editable SVG source. All 17 HTML entries link
+the shared icon. Production build, ICO format/size checks, copied asset equality
+and all entry links were verified. No application behavior or database changed.
+
 ## Milestone 8 — Optional AI greeting generation
 
 Implement only if selected for the MVP. Through a trusted server boundary, use
