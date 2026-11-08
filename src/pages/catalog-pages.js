@@ -56,7 +56,10 @@ async function browse(main,pageId){
   }catch{if(request===version){info.textContent='Cards could not be loaded. Please try again.';grid.replaceChildren();}}
  };
  form.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(update,200);});form.addEventListener('change',()=>{clearTimeout(timer);update();});
- if(pageId==='home')main.replaceChildren(intro('For their day. In their own way.','Thoughtful designs, a name they know, and words only you would say.'),notice(),button({label:'Browse all cards',href:'/cards/'}),section({title:'A little inspiration',children:[el('div',{className:'card-grid'},all.slice(0,3).map(c=>tile(c)))]}));
+ const inspiration=all.slice(0,3);
+ const purpleCat=all.find(c=>c.slug==='demo-disco-whiskers');
+ if(purpleCat)inspiration[0]=purpleCat;
+ if(pageId==='home')main.replaceChildren(intro('For their day. In their own way.','Thoughtful designs, a name they know, and words only you would say.'),notice(),button({label:'Browse all cards',href:'/cards/'}),section({title:'A little inspiration',children:[el('div',{className:'card-grid'},inspiration.map(c=>tile(c)))]}));
  else {await update();main.replaceChildren(intro('Find their kind of card.','Explore distinct designs for birthdays, thank-yous and new chapters.'),notice(),form,info,grid);}
 }
 function definitions(c){return c.personalization_fields.map(f=>({name:f.field_key,label:f.label,type:f.field_type==='select'?'text':f.field_type,required:f.is_required,maxLength:f.config.max_length??1000,min:f.config.min,max:f.config.max,minLength:f.config.min_length,options:f.field_type==='select'?[{value:'',label:'Choose an option'},...f.config.options]:undefined,hint:f.is_required ? 'Required before saving or generating this card.' : f.help_text||f.placeholder}));}

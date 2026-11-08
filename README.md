@@ -45,6 +45,7 @@ The catalogue includes two original animated cat birthday cards, **Disco whisker
 and **Cake & catnaps**. Filter by “Animated illustration” to see them. Both are free
 and available, with editable text, brief animations, an editor replay control and
 static reduced-motion rendering. The demo collection guide documents their seed command.
+Disco whiskers also appears first in the homepage inspiration row.
 The [Account guide](docs/account.md) covers `/account/`, profile editing, password
 change and recovery, local logout, and Auth email configuration. Avatar support is
 implemented behind a capability check; its Storage/validation migration is prepared
