@@ -102,5 +102,17 @@ export const pages = [
     "url": "/admin/users/",
     "label": "Manage users",
     "html": "admin/users/index.html"
+  },
+  {
+    "id": "forgot-password",
+    "url": "/forgot-password/",
+    "label": "Forgot your password?",
+    "html": "forgot-password/index.html"
+  },
+  {
+    "id": "reset-password",
+    "url": "/reset-password/",
+    "label": "Reset your password",
+    "html": "reset-password/index.html"
   }
 ];

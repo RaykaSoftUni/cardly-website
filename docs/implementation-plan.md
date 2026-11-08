@@ -222,6 +222,22 @@ records, and free versus unavailable paid behavior on mobile and desktop.
 
 ## Milestone 4 — Authentication and account access
 
+### Authorized account implementation (November 8, 2026)
+
+Added authenticated `/account/`, editable own display name, read-only Auth email,
+creation date and protected role, password change, current-session logout and
+My Cards shortcut. Login links to new `/forgot-password/` and `/reset-password/`
+HTML entries. Profile ownership and restricted update grants use the existing
+database policies; password operations use Auth only. Email editing, phone,
+preferences, deletion and registration remain outside this request.
+
+Avatar upload/preview/replacement/removal is implemented behind a database capability
+check. Additional server validation and private avatar Storage protections are
+prepared in `supabase/pending/account_management.sql`, **not applied** because the
+management connector still fails OAuth refresh after reconnection. No migration
+version has been fabricated. Real email delivery/redirect configuration also needs
+operator verification. See [Account setup and rollout](account.md).
+
 Implement registration, login, logout, basic validation, session restoration, and
 protected user/admin page behavior with Supabase Auth. Support confirmation and
 redirect behavior according to the actual project configuration. Guests retain

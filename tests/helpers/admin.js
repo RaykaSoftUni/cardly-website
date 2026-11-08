@@ -9,7 +9,11 @@ export const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAA
 export async function mockAdmin(page, role = 'admin') {
   const user = { id: adminId, email: 'operator@example.test', aud: 'authenticated', user_metadata: { role: 'admin' }, app_metadata: { provider: 'email' } };
   const payload = Buffer.from(JSON.stringify({ sub: adminId, role: 'authenticated', exp: Math.floor(Date.now()/1000)+3600 })).toString('base64url');
-  await page.addInitScript(({ host, user, payload }) => localStorage.setItem(`sb-${host}-auth-token`, JSON.stringify({ access_token: `test.${payload}.not-a-real-signature`, refresh_token: 'test-only-refresh', expires_at: Math.floor(Date.now()/1000)+3600, expires_in: 3600, token_type: 'bearer', user })), { host, user, payload });
+  await page.addInitScript(({ host, user, payload }) => {
+    if (sessionStorage.getItem('cardly-test-session-initialized')) return;
+    sessionStorage.setItem('cardly-test-session-initialized', 'true');
+    localStorage.setItem(`sb-${host}-auth-token`, JSON.stringify({ access_token: `test.${payload}.not-a-real-signature`, refresh_token: 'test-only-refresh', expires_at: Math.floor(Date.now()/1000)+3600, expires_in: 3600, token_type: 'bearer', user }));
+  }, { host, user, payload });
   const state = { settings: {max_bytes:5242880,mime_types:['image/png','image/jpeg','image/webp']}, role, writes: [], uploads: [], reads: [], users: [{ id: adminId, email: user.email, display_name: 'Operator', role: 'admin', created_at: new Date().toISOString() }, { id: otherId, email: 'reader@example.test', display_name: 'Reader', role: 'user', created_at: new Date().toISOString() }],
     cards: [{ id: cardId, title: 'Protected card', slug: 'protected-card', description: 'A test catalog card', status: 'draft', pricing_type: 'free', price: null, currency: 'EUR', is_available: true, is_featured: false, sort_order: 0 }],
     categories: [{ id: uid(4), name: 'Elegant', slug: 'elegant', description: '', is_active: true, sort_order: 0 }],

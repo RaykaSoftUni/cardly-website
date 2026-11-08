@@ -17,4 +17,6 @@ if (!publishableKey.startsWith('sb_publishable_')) {
 }
 
 // ES modules share this instance across all importers within a page.
+// Capture failure before Auth consumes and clears the callback fragment.
+export const authCallbackError = new URLSearchParams(location.hash.slice(1)).has('error') || new URLSearchParams(location.search).has('error');
 export const supabaseClient = createClient(url, publishableKey);

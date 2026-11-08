@@ -108,9 +108,9 @@ async function login(main){
   const {error}=await supabaseClient.auth.signInWithPassword(values);
   if(error){feedback.textContent='Sign-in failed. Check your account and password.';return;}
   const next=new URL(params().get('next')||'/my-cards/',location.origin);
-  location.assign(next.origin===location.origin&&next.pathname.startsWith('/admin/')?next.pathname+next.search:'/my-cards/');
+  location.assign(next.origin===location.origin&&(next.pathname.startsWith('/admin/')||next.pathname==='/account/')?next.pathname+next.search:'/my-cards/');
  }});
- main.replaceChildren(intro('Good to see you.','Sign in to keep your personal cards.'),el('section',{className:'auth-panel surface-panel'},[form.element,feedback]));
+ main.replaceChildren(intro('Good to see you.','Sign in to keep your personal cards.'),el('section',{className:'auth-panel surface-panel'},[form.element,feedback,button({label:'Forgot password?',href:'/forgot-password/',variant:'quiet'})]));
 }
 async function collection(main){
  const {data:{session}}=await supabaseClient.auth.getSession();

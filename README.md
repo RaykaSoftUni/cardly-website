@@ -6,7 +6,7 @@ Multi-page greeting card application with a fictional Supabase-backed catalog,
 server-side filters, distinct SVG designs, per-card personalization previews,
 password sign-in, owned drafts and generation placeholders. AI, photo uploads,
 payments, final image exports, sharing and registration UI remain
-unconnected. The 17 HTML entries retain shared components. See
+unconnected. The 19 HTML entries retain shared components. See
 [the design system guide](docs/design-system.md) for component interfaces.
 
 ## Requirements and setup
@@ -41,6 +41,11 @@ Storage assets and user roles at `/admin/`. See [administration](docs/administra
 for permissions, support-data limits, historical asset retention and verification.
 The [Images & Assets guide](docs/card-assets.md) covers batch uploads, local
 previews, hero assets, primary selection, ordering and configurable upload limits.
+The [Account guide](docs/account.md) covers `/account/`, profile editing, password
+change and recovery, local logout, and Auth email configuration. Avatar support is
+implemented behind a capability check; its Storage/validation migration is prepared
+but unapplied while the management connector cannot refresh OAuth. Existing profile
+ownership and column restrictions remain in force.
 
 ## Production verification
 
@@ -63,7 +68,7 @@ Committed SQL migrations are in `supabase/migrations/`.
 
 ## Structure
 
-- `pages/` contains all 17 HTML entries, including `pages/index.html` and
+- `pages/` contains all 19 HTML entries, including `pages/index.html` and
   nested public pages; `pages/admin/` contains the admin HTML entries.
 - `dist/` contains generated production files and is a sibling of `pages/`,
   `docs/`, `src/`, `scripts/`, and `supabase/`.
