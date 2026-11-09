@@ -1,9 +1,17 @@
 # Private user file Storage
 
-Status: implemented locally; **not applied or enabled on the remote project**.
-Live acceptance requires a connected Supabase operator session, migration-history
-inspection, Edge Function deployment and the three authenticated test accounts.
-The feature stays hidden until the database capability is explicitly enabled.
+Status: **deployed and enabled on the remote project** on 9 November 2026.
+The authenticated live two-user/admin test passes, including actual upload,
+replacement/removal, private read/signing isolation and photo-card PNG export.
+The remote rollback-only user-files SQL authorization suite also passes.
+Both Edge Functions are deployed and the photo card is published. Scheduled
+background cleanup remains unconfigured; upload/removal performs immediate cleanup
+and failed attempts remain queued.
+
+Migration `20261109203511` is an empty migration recorded after a local preparation
+command failed; it is preserved to match actual remote history. The schema is in
+`20261109203554_private_user_file_storage.sql`. No migration history was rewritten.
+The acceptance review below records the earlier, pre-deployment state.
 
 ### Acceptance review — 9 November 2026
 
@@ -117,22 +125,23 @@ Do not delete the cleanup queue as part of the account cascade.
 
 ## Remote rollout
 
-1. Inspect the actual migration history, policies, buckets and existing non-null
-   avatar paths. Do not assume the earlier pending avatar proposal was applied.
-   `supabase/pending/account_management.sql` is superseded; do not apply it.
-2. Review and apply `supabase/pending/user_file_storage.sql` through the migration
-   tool. Save the actual returned version/SQL in `supabase/migrations/`, then remove
-   the pending proposal. Do not invent or backdate migration history.
-3. Deploy `user-file-upload` and `user-file-cleanup` using the JavaScript entrypoints
-   and JWT verification in `supabase/config.toml`. Keep service credentials only
-   in the trusted runtime. Verify the pinned JSR dependency loads in that runtime.
-4. Apply `supabase/seed/photo-card.sql` once, preserving existing entries. It creates
-   a photo-ready public free card and local public artwork metadata.
-5. Enable the capability through trusted SQL/operator access:
-   `select public.enable_user_file_storage(true);`. Set it false to disable uploads.
-6. Run the rollback-only SQL suites, the authenticated HTTP tests below, and verify
-   Account/photo preview/export at the real deployment. Configure a cleanup schedule.
-   Update FAQ/Pricing copy when the remote feature becomes available.
+Completed on 9 November 2026: inspected migration history, empty legacy avatar
+references and existing private buckets; applied the committed schema migration;
+deployed both functions with JWT verification; seeded the photo card; enabled
+the capability. Do not reapply either superseded pending proposal. The historical
+empty migration is intentionally preserved to match the remote ledger.
+
+To disable uploads through trusted operator SQL:
+`select public.enable_user_file_storage(false);`.
+The input limit is configured with `public.set_user_file_upload_limit(bytes)`.
+Scheduled background cleanup remains a follow-up operational task. Immediate
+cleanup is exercised by the live upload/replacement/removal test; failures stay
+queued for retry through the authenticated cleanup action or service worker.
+
+Verification after rollout: production build and all 21 production route/asset
+checks pass; eight upload UI, FAQ, Pricing and live catalogue browser checks pass;
+the separate real two-user/admin upload test passes. The remote rollback-only
+user-files SQL suite passes.
 
 ## Verification
 
@@ -162,8 +171,7 @@ Use Node 22.12+ and configure a Playwright browser as described in README. This 
 requires the deployed functions, enabled capability and photo-card seed. It covers
 two non-admin users, real uploads/replacement/removal, direct private reads/signing,
 forged paths/ownership, role escalation, restricted admin operations, public admin
-asset visibility and an authenticated photo-card PNG export. It remains unexecuted
-against the live service until the credentials and connection are available.
+asset visibility and an authenticated photo-card PNG export. It passed against the live service on 9 November 2026.
 
 With Deno installed, validate the server code and decoder independently:
 
@@ -176,3 +184,7 @@ References: [Storage access control](https://supabase.com/docs/guides/storage/se
 [Storage deletion](https://supabase.com/docs/guides/storage/management/delete-objects),
 [Auth getUser](https://supabase.com/docs/reference/javascript/auth-getuser),
 [ImageScript](https://imagescript.dev/).
+
+Additional verification: the seeded-collection SQL audit reaches the existing demo
+draft ownership assertion and fails there (Demo draft ownership failed). This
+audit was not reported as passing; live upload ownership/isolation checks pass.

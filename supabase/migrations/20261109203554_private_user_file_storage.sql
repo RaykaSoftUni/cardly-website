@@ -1,6 +1,4 @@
--- NOT APPLIED. Inspect remote migration history and existing data before applying.
--- Save the ACTUAL returned migration version under supabase/migrations afterwards.
--- Replaces the unapplied account_management.sql proposal. Do not apply both.
+-- Private validated avatar and card-photo storage.
 begin;
 create table private.file_storage_rollout (singleton boolean primary key default true check(singleton), enabled boolean not null default false, max_input_bytes integer not null default 5242880 check(max_input_bytes between 1024 and 10485760));
 insert into private.file_storage_rollout default values;

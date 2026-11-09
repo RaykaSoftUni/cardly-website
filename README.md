@@ -4,7 +4,7 @@ Repository: [RaykaSoftUni/cardly-website](https://github.com/RaykaSoftUni/cardly
 
 Multi-page greeting card application with a fictional Supabase-backed catalog,
 server-side filters, distinct SVG designs, per-card personalization previews,
-password sign-in, owned drafts and generation placeholders. AI, photo uploads,
+password sign-in, owned drafts and generation placeholders. AI,
 payments, direct sharing and registration UI remain
 unconnected. The 21 HTML entries retain shared components. See
 [the design system guide](docs/design-system.md) for component interfaces.
@@ -48,8 +48,7 @@ static reduced-motion rendering. The demo collection guide documents their seed 
 Disco whiskers also appears first in the homepage inspiration row.
 The [Account guide](docs/account.md) covers `/account/`, profile editing, password
 change and recovery, local logout, and Auth email configuration. Avatar and private draft-photo support are
-implemented behind a capability check; their unified Storage migration and Edge
-Functions are prepared but not remotely applied/deployed. See
+deployed and enabled through validated Edge Functions and a private Storage bucket. See
 [private user files](docs/user-file-storage.md) for rollout and cross-user tests. Existing profile
 ownership and column restrictions remain in force.
 

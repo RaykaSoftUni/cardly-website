@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 test('live public Supabase catalog and seeded artwork',async({page})=>{
  test.skip(process.env.CARDLY_LIVE_SMOKE!=='1','Enable explicitly to verify the connected project.');
  await page.goto('/cards/');
- await expect(page.locator('.catalog-card')).toHaveCount(12,{timeout:20000});
+ await expect(page.locator('.catalog-card')).toHaveCount(13,{timeout:20000});
  await expect(page.locator('main')).not.toContainText('Confetti laboratory');
  await expect(page.locator('main')).not.toContainText('The retired garden');
  await page.locator('.catalog-card img').evaluateAll(images=>images.forEach(image=>image.loading='eager'));

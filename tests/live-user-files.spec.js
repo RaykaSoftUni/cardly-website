@@ -36,11 +36,11 @@ test('live private uploads isolate two ordinary users and enforce admin boundari
   expect((await b.storage.from('user-uploads').createSignedUrl(ap,60)).error).toBeTruthy();
   expect((await b.storage.from('user-uploads').upload(ap,png,{contentType:'image/png',upsert:true})).error).toBeTruthy();
   await b.storage.from('user-uploads').remove([ap]);
-  expect((await a.storage.from('user-uploads').list(au.id+'/avatars')).data.some(o=>ap.endsWith('/'+o.name))).toBe(true);
+  expect((await a.storage.from('user-uploads').list(au.id+'/avatar')).data.some(o=>ap.endsWith('/'+o.name))).toBe(true);
   expect((await a.from('profiles').update({avatar_path:bp}).eq('id',au.id)).error).toBeTruthy();
   const forged=await b.from('profiles').update({avatar_path:bp}).eq('id',au.id).select('id');expect(forged.data).toEqual([]);
   const replacement=await upload(a,'avatar');expect(replacement).not.toBe(ap);
-  expect((await a.storage.from('user-uploads').list(au.id+'/avatars')).data.some(o=>ap.endsWith('/'+o.name))).toBe(false);
+  expect((await a.storage.from('user-uploads').list(au.id+'/avatar')).data.some(o=>ap.endsWith('/'+o.name))).toBe(false);
   const cards=await a.rpc('get_card_catalogue',{p_search:'A birthday worth keeping'});const card=cards.data.find(c=>c.slug==='demo-photo-keepsake');expect(card).toBeTruthy();
   const draft=await a.rpc('create_card_draft',{p_card_id:card.id,p_personalization_data:{recipient_name:'Storage test'}});expect(draft.error).toBeNull();draftId=draft.data.id;
   const photo=await upload(a,'draft',draftId);

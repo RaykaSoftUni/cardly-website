@@ -509,3 +509,16 @@ tests (six live tests skipped), six isolated SQL suites, both Deno entrypoint
 checks and three decoder/size-validation tests pass. Avatar tests cover configured
 limits, failure preservation, replacement/removal and pre-migration compatibility;
 SQL checks verify replacement ordering and prevent ordinary users changing limits.
+
+### Private upload remote rollout — completed 9 November 2026
+
+Applied `20261109203554_private_user_file_storage` after inspecting remote history,
+existing avatar data and buckets. Preserved the actual preceding empty migration
+`20261109203511`. Deployed both validated Edge Functions, seeded the photo card
+and enabled uploads. The authenticated two-user/admin upload test and remote
+rollback-only user-files authorization suite pass. Scheduled background cleanup
+remains unconfigured; immediate authenticated cleanup and durable retries exist.
+
+Additional verification: the seeded-collection SQL audit reaches the existing demo
+draft ownership assertion and fails there (Demo draft ownership failed). This
+audit was not reported as passing; live upload ownership/isolation checks pass.

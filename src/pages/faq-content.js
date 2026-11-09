@@ -12,7 +12,7 @@ const sections = [
     ['Why are some cards unavailable?', 'Some published cards are shown for preview only. Paid cards remain unavailable while payments are not implemented. An unavailable card cannot be generated or purchased.'],
   ]],
   ['personalization', 'Personalization', [
-    ['What can I personalize?', 'The selected card determines the fields you can edit, such as recipient name, headline, message and sender name. Some forms also collect age, relationship, interests or tone; these do not currently generate AI text or images. Photo uploads are not connected.'],
+    ['What can I personalize?', 'The selected card determines the fields you can edit, such as recipient name, headline, message and sender name. Some forms also collect age, relationship, interests or tone; these do not currently generate AI text or images. Signed-in users can add a private photo to photo-ready designs.'],
     ['Can I preview a card before generating it?', 'Yes. Available free cards support a live text preview, including guest personalization. Choose Generate PNG to create a 1500 × 2000 image, then Download Card. Animated designs export as a still image.'],
     ['Can I change the message?', 'Yes. Edit the supported text fields and review the preview. AI message generation and regeneration are not available yet.'],
     ['Will every card look the same?', 'No. Cards use different illustrations, typography, layouts and personalization fields. Some designs include animation, with a still version for reduced-motion preferences.'],
@@ -41,9 +41,9 @@ const sections = [
     ['Can I print a card?', 'The 1500 × 2000 PNG is designed for digital sharing. You may print it yourself; print quality depends on the chosen print size. Cardly has no printing or shipping service.'],
   ]],
   ['images', 'Images and uploads', [
-    ['Can I upload my own photo?', 'Personalization photo uploads are not connected. Current designs use their existing artwork.'],
-    ['What image formats will be supported?', 'No personalization upload formats are currently enabled. When uploads are introduced, the form should state the supported formats and maximum file size.'],
-    ['Who would be able to access uploaded photos?', 'Personalization uploads are planned to be private to the authenticated owner. Public photo sharing is not implemented.'],
+    ['Can I upload my own photo?', 'Yes. Sign in and choose A birthday worth keeping to upload a private photo. You can also upload an avatar on Account. Other designs use their existing artwork.'],
+    ['What image formats will be supported?', 'JPEG, PNG and WebP images are supported. The current upload limit appears beside the form; it defaults to 5 MiB. Images are validated and stored as PNG.'],
+    ['Who would be able to access uploaded photos?', 'Uploaded photos are private to the authenticated owner. Other users and administrator browser accounts cannot read them. Public photo sharing is not implemented.'],
   ]],
   ['privacy', 'Privacy and security', [
     ['Is my account data private?', 'Authentication and database access policies restrict private profiles, drafts and generation records to their owners. Authorized administrators have protected catalog and limited account/support management tools.'],

@@ -3,8 +3,8 @@ begin;
 do $$
 declare entry record; uid uuid; count_rows integer;
 begin
- if (select count(*) from public.cards where slug like 'demo-%') <> 14 then raise exception 'Expected 14 seeded cards'; end if;
- if (select count(*) from public.cards where slug like 'demo-%' and status='published') <> 12 then raise exception 'Expected 12 public demos'; end if;
+ if (select count(*) from public.cards where slug like 'demo-%') <> 15 then raise exception 'Expected 15 seeded cards'; end if;
+ if (select count(*) from public.cards where slug like 'demo-%' and status='published') <> 13 then raise exception 'Expected 13 public demos'; end if;
  if (select count(*) from public.cards c join public.card_templates t on t.card_id=c.id where c.slug in ('demo-disco-whiskers','demo-cake-catnaps') and c.status='published' and c.pricing_type='free' and c.is_available and t.layout_config->>'design_key' in ('disco-whiskers','cake-catnaps')) <> 2 then raise exception 'Animated cats incomplete'; end if;
  if jsonb_array_length(public.get_card_catalogue(p_pricing_type=>'paid')) <> 3 then raise exception 'Paid filtering failed'; end if;
  if jsonb_array_length(public.get_card_catalogue(p_search=>'Tiny space explorer')) <> 1 then raise exception 'Keyword search failed'; end if;

@@ -13,7 +13,7 @@ export function renderPricingPage(main) {
       createPricingOption({
         id: 'free-cards', title: 'Free Cards', price: '€0', priceNote: 'No payment required', status: 'Available to personalize',
         description: 'Choose a published, available free design and try its supported personalization fields.',
-        features: ['Selected card designs, including some animated designs', 'Recipient name, sender name and custom greeting where supported', 'Editable text and live card preview', 'Guest personalization without signing in', 'Private drafts and demo generation jobs when signed in', '1500 × 2000 PNG generation and downloads for supported designs'],
+        features: ['Selected card designs, including some animated designs', 'Recipient name, sender name and custom greeting where supported', 'Editable text and live card preview', 'Guest personalization without signing in', 'Private drafts and demo generation jobs when signed in', 'Private photo uploads on photo-ready designs when signed in', '1500 × 2000 PNG generation and downloads for supported designs'],
         action: { label: 'Browse Free Cards', href: '/cards/?pricing=free&availability=true' },
       }),
       createPricingOption({
@@ -34,7 +34,7 @@ export function renderPricingPage(main) {
       el('ul', { className: 'pricing-planned' }, [
         el('li', {}, 'Premium purchases: payment processing and verified purchase access.'),
         el('li', {}, 'Premium designs: potentially exclusive artwork and additional personalization, depending on the card.'),
-        el('li', {}, 'Future platform features: AI greetings, optional photo uploads and additional download formats. Their free or premium inclusion has not been decided.'),
+        el('li', {}, 'Future platform features: AI greetings and additional download formats. Their free or premium inclusion has not been decided.'),
       ]),
       el('p', { className: 'muted' }, 'A premium label or EUR price is informational today. It cannot authorize paid use. No checkout or payment is available.'),
       button({ label: 'Read the FAQ', href: '/faq/#pricing', variant: 'outline-primary' }),
