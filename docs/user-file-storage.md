@@ -14,8 +14,8 @@ deployed function behavior or authenticated file isolation.
 
 The production build and all 21 generated page checks passed. All six SQL suites
 listed below passed again in the isolated PGlite environment. Deno checked both
-Edge Function entrypoints, and both decoder/image-validation tests passed.
-The full browser suite reports **61 passed, six skipped**. Four authenticated live
+Edge Function entrypoints, and all three decoder/image-validation tests passed.
+The full browser suite reports **63 passed, six skipped**. Four authenticated live
 tests were skipped without credentials; two public live smoke tests require the
 explicit `CARDLY_LIVE_SMOKE=1` opt-in and were not enabled in this run.
 
@@ -32,7 +32,7 @@ capability enablement was performed during this review.
 Ordinary users never upload private images into this bucket. The separate private
 `user-uploads` bucket stores canonical PNGs at server-generated paths:
 
-- `<auth.uid()>/avatars/<upload-uuid>.png`
+- `<auth.uid()>/avatar/<upload-uuid>.png`
 - `<auth.uid()>/drafts/<owned-draft-uuid>/<upload-uuid>.png`
 
 The user-files Edge Function verifies the JWT with Auth `getUser`. Its caller-scoped
@@ -42,11 +42,19 @@ a destination path or finalize an upload. The function validates JPEG/PNG/WebP
 signatures and dimensions, decodes the actual image with pinned ImageScript 3.13.1,
 then re-encodes it as PNG without passing source metadata to the encoder.
 
-Inputs are limited to 2 MiB, 16 million pixels and 8000 px per side. Canonical PNG
+Inputs default to 5 MiB, 16 million pixels and 8000 px per side. Canonical PNG
 outputs are limited to 10 MiB. The request body is bounded before multipart parsing.
+Trusted operators configure the input limit (1 KiB–10 MiB) with
+`select public.set_user_file_upload_limit(5242880);`. Browser validation, displayed
+hints and Edge Function body/file checks read the same authenticated
+`user_file_upload_settings()` RPC. This setting is separate from admin asset limits.
 The function uploads with server-only credentials and finalizes through a trusted
 RPC. The RPC requires the Storage object and verified metadata before atomically
-updating `profiles.avatar_url` or `card_drafts.uploaded_image_path`.
+updating `profiles.avatar_path` or `card_drafts.uploaded_image_path`.
+The proposal adds `avatar_path` and revokes browser writes to legacy `avatar_url`.
+Existing `avatar_url` data remains untouched for operator review; it is not copied
+into the validated registry. Before rollout, Account falls back to loading the
+display name if the new column is absent, keeping profile/password controls usable.
 
 `user_uploads` records have owner-only SELECT RLS and no browser writes. Storage
 policies permit reading only the owner's validated files and deleting only the

@@ -4,11 +4,14 @@ import { mockAdmin, adminId, png } from './helpers/admin.js';
 
 async function mockAccount(page) {
   const state = await mockAdmin(page, 'user');
-  state.profile = { display_name: 'Alex', avatar_url: null };
+  state.profile = { display_name: 'Alex', avatar_path: null };
   state.profileWrites = [];
   state.authWrites = [];
   state.failProfile = false;
   state.failPassword = false;
+  state.uploadLimit = 5242880;
+  state.failUpload = false;
+  await page.route('**/rpc/user_file_upload_settings', route => route.fulfill({json:{max_bytes:state.uploadLimit}}));
   const user = { id: adminId, email: 'alex@example.test', created_at: '2026-01-02T00:00:00Z', aud: 'authenticated', user_metadata: { role: 'admin' }, app_metadata: { provider: 'email' } };
   await page.route('**/auth/v1/user', route => {
     if (route.request().method() === 'PUT') {
@@ -29,10 +32,11 @@ async function mockAccount(page) {
     return route.fulfill({ json: state.profile });
   });
   await page.route('**/functions/v1/user-file-upload', async route => {
+    if(state.failUpload)return route.fulfill({status:400,json:{error:'Upload failed. Previous image kept.'}});
     const body=route.request().postData()||'';
-    if(body.includes('name="action"')&&body.includes('remove'))state.profile.avatar_url=null;
-    else {state.profile.avatar_url=adminId+'/avatars/'+crypto.randomUUID()+'.png';state.uploads.push(state.profile.avatar_url);}
-    return route.fulfill({json:{path:state.profile.avatar_url,cleanupFailed:false}});
+    if(body.includes('name="action"')&&body.includes('remove'))state.profile.avatar_path=null;
+    else {state.profile.avatar_path=adminId+'/avatar/'+crypto.randomUUID()+'.png';state.uploads.push(state.profile.avatar_path);}
+    return route.fulfill({json:{path:state.profile.avatar_path,cleanupFailed:false}});
   });
   await page.route('**/auth/v1/logout*', route => route.fulfill({ status: 204 }));
   return state;
@@ -138,20 +142,52 @@ test('avatar validates, previews, uploads unique own paths, replaces and confirm
   await expect(page.getByAltText('Your profile image')).toHaveAttribute('src', /^blob:/);
   await page.getByRole('button', { name: 'Save profile image', exact: true }).click();
   await expect(page.locator('main')).toContainText('Profile image saved.');
-  const oldPath = state.profile.avatar_url;
-  expect(oldPath).toMatch(new RegExp(`^${adminId}/avatars/[a-f0-9-]+\\.png$`));
+  const oldPath = state.profile.avatar_path;
+  expect(oldPath).toMatch(new RegExp(`^${adminId}/avatar/[a-f0-9-]+\\.png$`));
   await file.setInputFiles({ name: 'photo.png', mimeType: 'image/png', buffer: png });
   await page.getByRole('button', { name: 'Save profile image', exact: true }).click();
-  await expect.poll(() => state.profile.avatar_url).not.toBe(oldPath);
+  await expect.poll(() => state.profile.avatar_path).not.toBe(oldPath);
   await expect(page.getByRole('button', { name: 'Save profile image', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Remove profile image', exact: true }).click();
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
-  expect(state.profile.avatar_url).toBeTruthy();
+  expect(state.profile.avatar_path).toBeTruthy();
   await page.getByRole('button', { name: 'Remove profile image', exact: true }).click();
   await page.getByRole('button', { name: 'Remove image', exact: true }).click();
   await expect(page.locator('main')).toContainText('Profile image removed.');
-  expect(state.profile.avatar_url).toBeNull();
+  expect(state.profile.avatar_path).toBeNull();
   await expect(page.getByRole('img', { name: 'Default profile image' })).toBeVisible();
+});
+
+test('configured avatar limit rejects oversized input and failed replacement preserves the saved image', async ({ page }) => {
+  const state = await mockAccount(page);
+  state.uploadLimit = 1024;
+  await page.goto('/account/');
+  const file = page.locator('input[name="avatar"]');
+  await file.setInputFiles({name:'large.png',mimeType:'image/png',buffer:Buffer.concat([png,Buffer.alloc(2048)])});
+  await expect(page.locator('main')).toContainText('Choose an image no larger than');
+  expect(state.uploads).toHaveLength(0);
+  await file.setInputFiles({name:'valid.png',mimeType:'image/png',buffer:png});
+  await page.getByRole('button',{name:'Save profile image',exact:true}).click();
+  await expect(page.locator('main')).toContainText('Profile image saved.');
+  const saved = state.profile.avatar_path;
+  state.failUpload = true;
+  await file.setInputFiles({name:'replacement.png',mimeType:'image/png',buffer:png});
+  await page.getByRole('button',{name:'Save profile image',exact:true}).click();
+  await expect(page.locator('main')).toContainText('Upload failed. Previous image kept.');
+  expect(state.profile.avatar_path).toBe(saved);
+  expect(state.uploads).toHaveLength(1);
+});
+
+test('account works before the avatar_path migration is applied', async ({ page }) => {
+  await mockAccount(page);
+  await page.route('**/rest/v1/profiles*',route=>{
+    if(new URL(route.request().url()).searchParams.get('select').includes('avatar_path'))return route.fulfill({status:400,json:{code:'42703',message:'column does not exist'}});
+    return route.fulfill({json:{display_name:'Alex'}});
+  });
+  await page.route('**/rpc/account_avatar_available',route=>route.fulfill({json:false}));
+  await page.goto('/account/');
+  await expect(page.getByLabel('Display name')).toHaveValue('Alex');
+  await expect(page.getByRole('button',{name:'Change password',exact:true})).toBeEnabled();
 });
 
 test('logout ends the local session and leaves the account page', async ({ page }) => {

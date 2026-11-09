@@ -1,8 +1,18 @@
 import { Image } from 'jsr:@matmen/imagescript@3.13.1';
-import { imageHeader } from '../_shared/image-validation.js';
+import { imageHeader, validateImageFile, inputLimit } from '../_shared/image-validation.js';
 const png=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGO4U7HgPwAHHAL0OMCbtQAAAABJRU5ErkJggg=='),c=>c.charCodeAt(0));
 const check=(value,label)=>{if(!value)throw new Error(label);};
 const rejects=async(action,label)=>{let failed=false;try{await action();}catch{failed=true;}check(failed,label);};
+Deno.test('input size uses the configured limit for every supported format',async()=>{
+ check(inputLimit===5242880,'default is 5 MiB');
+ for(const type of ['image/png','image/jpeg','image/webp']) {
+  validateImageFile({type,size:inputLimit});
+  await rejects(()=>validateImageFile({type,size:inputLimit+1}),'default limit enforced');
+  await rejects(()=>validateImageFile({type,size:2048},1024),'smaller configured limit enforced');
+ }
+ await rejects(()=>validateImageFile({type:'image/svg+xml',size:100}),'unsupported MIME rejected');
+ await rejects(()=>validateImageFile({type:'image/png',size:0}),'empty file rejected');
+});
 Deno.test('trusted decoder verifies bytes and canonical PNG output',async()=>{
  const header=imageHeader(png,'image/png');check(header.width===1&&header.height===1,'fixture dimensions');
  const image=await Image.decode(png);check(image.width===1&&image.height===1,'decoded dimensions');

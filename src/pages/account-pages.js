@@ -1,3 +1,4 @@
+import { userUploadLimit, userImageHint } from '../services/user-files.js';
 import { el } from '../utils/dom.js';
 import { button, section } from '../components/ui.js';
 import { createForm } from '../components/forms/fields.js';
@@ -31,13 +32,16 @@ function passwordForm({ reset = false } = {}) {
   return el('div', {}, [form.element, feedback]);
 }
 async function avatarSection(profile) {
-  let savedPath = profile.avatar_url;
+  let savedPath = profile.avatar_path;
   let savedURL = null;
   let selectionURL = null;
   let generation = 0;
   const image = el('img', { className: 'account-avatar', alt: 'Your profile image', width: 96, height: 96, hidden: true });
   const fallback = el('div', { className: 'account-avatar avatar-fallback', role: 'img', 'aria-label': 'Default profile image' }, '☺');
   if (!await avatarsAvailable()) return section({ title: 'Profile image', children: [fallback, el('p', { className: 'muted' }, 'Profile image uploads are currently unavailable.')] });
+  let maxBytes;
+  try { maxBytes = await userUploadLimit(); }
+  catch { return section({ title: 'Profile image', children: [fallback, el('p', {role:'status'}, 'Upload settings could not be loaded. Reload to try again.')] }); }
   const feedback = status();
   const cleanup = () => { if (savedURL) URL.revokeObjectURL(savedURL); if (selectionURL) URL.revokeObjectURL(selectionURL); };
   window.addEventListener('pagehide', cleanup, { once: true });
@@ -61,7 +65,7 @@ async function avatarSection(profile) {
     } catch (error) { form.setError(accountError(error)); }
     finally { remove.disabled = !savedPath; form.element.querySelectorAll('input,button').forEach(control => { control.disabled = false; }); }
   } });
-  const form = createForm({ fields: [{ name: 'avatar', label: 'Profile image', type: 'file', required: true, accept: 'image/jpeg,image/png,image/webp', hint: 'JPEG, PNG or WebP · up to 2 MiB · 16 million pixels.' }], submitLabel: 'Save profile image', onChange: async ({ avatar }) => {
+  const form = createForm({ fields: [{ name: 'avatar', label: 'Profile image', type: 'file', required: true, accept: 'image/jpeg,image/png,image/webp', hint: userImageHint(maxBytes) }], submitLabel: 'Save profile image', onChange: async ({ avatar }) => {
     const attempt = ++generation;
     if (selectionURL) URL.revokeObjectURL(selectionURL); selectionURL = null;
     if (!avatar) { display(savedURL); return; }

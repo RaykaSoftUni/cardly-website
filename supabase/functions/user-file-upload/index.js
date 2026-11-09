@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.119.0';
 import { Image } from 'jsr:@matmen/imagescript@3.13.1';
-import { allowedTypes, imageHeader, inputLimit } from '../_shared/image-validation.js';
+import { imageHeader, validateImageFile, limitLabel } from '../_shared/image-validation.js';
 import { cleanUserFiles } from '../_shared/cleanup.js';
 
 const cors = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, apikey, content-type, x-client-info','Access-Control-Allow-Methods':'POST, OPTIONS'};
@@ -18,10 +18,14 @@ Deno.serve(async request=>{
   const admin=createClient(url,secret,{auth});
   let reservation=null;
   try {
-    if(Number(request.headers.get('content-length')||0)>inputLimit+65536)throw new Error('Choose an image no larger than 2 MiB.');
+    const settings=await caller.rpc('user_file_upload_settings');
+    const inputLimit=settings.data?.max_bytes;
+    if(settings.error || !Number.isInteger(inputLimit) || inputLimit<1024 || inputLimit>10485760)throw new Error('Upload settings could not be loaded. Please try again.');
+    const sizeError='Choose an image no larger than '+limitLabel(inputLimit)+'.';
+    if(Number(request.headers.get('content-length')||0)>inputLimit+65536)throw new Error(sizeError);
     const reader=request.body?.getReader(); if(!reader)throw new Error('Select an image.');
     const chunks=[];let length=0;
-    for(;;){const {done,value}=await reader.read();if(done)break;length+=value.length;if(length>inputLimit+65536){await reader.cancel();throw new Error('Choose an image no larger than 2 MiB.');}chunks.push(value);}
+    for(;;){const {done,value}=await reader.read();if(done)break;length+=value.length;if(length>inputLimit+65536){await reader.cancel();throw new Error(sizeError);}chunks.push(value);}
     const body=new Uint8Array(length);let offset=0;for(const part of chunks){body.set(part,offset);offset+=part.length;}
     const form=await new Response(body,{headers:{'Content-Type':request.headers.get('content-type')||''}}).formData();
     const purpose=form.get('purpose'), draftId=form.get('draft_id')||null, file=form.get('file');
@@ -35,7 +39,8 @@ Deno.serve(async request=>{
       const cleanup=await cleanUserFiles(admin,user.id);
       return response({path:null,cleanupFailed:cleanup.failed});
     }
-    if(!(file instanceof File)||!allowedTypes.includes(file.type)||!file.size||file.size>inputLimit)throw new Error('Choose a JPEG, PNG or WebP image no larger than 2 MiB.');
+    if(!(file instanceof File))throw new Error('Choose an image.');
+    validateImageFile(file,inputLimit);
     // All record ownership and template checks derive identity from the verified caller JWT.
     const prepared=await caller.rpc('prepare_user_upload',{p_purpose:purpose,p_draft_id:draftId});
     if(prepared.error)throw new Error('This upload is not permitted for your account or draft.');

@@ -29,6 +29,7 @@ export async function mockAdmin(page, role = 'admin') {
     if (entity === 'user_roles') return route.fulfill({ json: [{ user_id: adminId, role: state.role }] });
     if (url.pathname.includes('/rpc/')) {
       const args = request.postDataJSON();
+      if (entity === 'user_file_upload_settings') return route.fulfill({json:{max_bytes:5242880}});
       if (entity === 'admin_list_users') return route.fulfill({ json: state.users });
       if (entity === 'admin_generated_metadata') return route.fulfill({ json: [{ id: uid(90), user_id: otherId, card_title: 'Snapshot title', template_version: 2, status: 'processing', created_at: new Date().toISOString() }] });
       if(entity==='admin_asset_settings') { if(args.p_max_bytes!==null)state.settings.max_bytes=args.p_max_bytes; return route.fulfill({json:state.settings}); }

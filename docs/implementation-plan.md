@@ -478,13 +478,34 @@ functions are deployed, the photo card is seeded and the capability is enabled.
 See [user file Storage](user-file-storage.md) for operation and verification.
 
 Verification reviewed on 9 November 2026: all 21 entries build and production
-route/asset checks pass. The browser suite reports 61 passed and six skipped:
+route/asset checks pass. The browser suite reports 63 passed and six skipped:
 four authenticated live tests need credentials, and two public live smoke tests
 require explicit opt-in. The live two-user/admin storage test was not executed.
 In an isolated PostgreSQL engine, the full migration chain, pending proposal and
 seed apply, and all six SQL authorization suites pass. Both Edge Function
-entrypoints pass Deno checks and both image-validation tests pass. Supabase Auth,
+entrypoints pass Deno checks and all three image-validation tests pass. Supabase Auth,
 catalogue and Storage reachability checks return HTTP 200. Remote work is deferred
 at the user's request until operator access and dedicated test-account passwords
 are available; the feature remains pending remote acceptance. These local results
 do not satisfy the requested live cross-user acceptance criteria.
+
+### Authenticated image upload refinement — 9 November 2026
+
+The follow-up upload request uses `profiles.avatar_path` and the private
+`<user-id>/avatar/<upload-id>.png` namespace; owned draft photos retain
+`<user-id>/drafts/<draft-id>/<upload-id>.png`. The unapplied unified proposal adds
+the field, preserves legacy data and revokes browser writes to `avatar_url`.
+Input validation defaults to 5 MiB and reads a trusted configurable database
+setting in both browser and Edge Function. All supported inputs are decoded and
+stored as canonical PNGs. Replacement keeps the previous path until upload and
+validated attachment succeed, then queues the old object for Storage API cleanup.
+Authenticated private downloads become local object URLs for avatar display.
+
+Remote migration inspection/application, function deployment and authenticated
+live acceptance still require the Supabase operator connection and dedicated test
+credentials. The Supabase plugin was found but is not connected in this session.
+Verification of this refinement: production build with all 21 entries, 63 browser
+tests (six live tests skipped), six isolated SQL suites, both Deno entrypoint
+checks and three decoder/size-validation tests pass. Avatar tests cover configured
+limits, failure preservation, replacement/removal and pre-migration compatibility;
+SQL checks verify replacement ordering and prevent ordinary users changing limits.

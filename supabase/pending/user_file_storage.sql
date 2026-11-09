@@ -2,7 +2,7 @@
 -- Save the ACTUAL returned migration version under supabase/migrations afterwards.
 -- Replaces the unapplied account_management.sql proposal. Do not apply both.
 begin;
-create table private.file_storage_rollout (singleton boolean primary key default true check(singleton), enabled boolean not null default false);
+create table private.file_storage_rollout (singleton boolean primary key default true check(singleton), enabled boolean not null default false, max_input_bytes integer not null default 5242880 check(max_input_bytes between 1024 and 10485760));
 insert into private.file_storage_rollout default values;
 revoke all on private.file_storage_rollout from public,anon,authenticated;
 create table public.user_uploads (
@@ -26,6 +26,10 @@ create table private.user_file_cleanup (
  created_at timestamptz not null default now(), attempts integer not null default 0
 );
 revoke all on private.user_file_cleanup from public,anon,authenticated;
+alter table public.profiles add column avatar_path text;
+-- Keep legacy avatar_url data intact; new uploads use only validated Storage paths.
+revoke update (avatar_url) on public.profiles from authenticated;
+grant update (avatar_path) on public.profiles to authenticated;
 alter table public.profiles add constraint profile_display_name_length
  check(display_name is null or (char_length(display_name) between 1 and 80 and display_name !~ '[[:cntrl:]]' and display_name=btrim(display_name)));
 alter table public.card_drafts add column uploaded_image_path text;
@@ -40,7 +44,7 @@ create policy own_upload_read on storage.objects for select to authenticated usi
 );
 create function private.user_file_referenced(p_path text) returns boolean
 language sql stable security definer set search_path='' as $$
- select exists(select 1 from public.profiles where avatar_url=p_path)
+ select exists(select 1 from public.profiles where avatar_path=p_path)
  or exists(select 1 from public.card_drafts where uploaded_image_path=p_path)
  or exists(select 1 from public.generated_cards where uploaded_image_path=p_path);
 $$;
@@ -65,6 +69,17 @@ create function public.card_photo_available(p_card_id uuid) returns boolean
 language sql stable security definer set search_path='' as $$
  select public.user_file_storage_available() and private.card_is_usable(p_card_id) and private.card_supports_photo(p_card_id);
 $$;
+-- The same trusted setting drives browser hints and bounded server-side parsing.
+create function public.user_file_upload_settings() returns jsonb
+language sql stable security definer set search_path='' as $$
+ select jsonb_build_object('max_bytes',max_input_bytes) from private.file_storage_rollout where singleton;
+$$;
+create function public.set_user_file_upload_limit(p_max_bytes integer) returns void
+language plpgsql security definer set search_path='' as $$
+begin
+ if p_max_bytes is null or p_max_bytes not between 1024 and 10485760 then raise exception 'Upload limit must be 1 KiB to 10 MiB' using errcode='22023'; end if;
+ update private.file_storage_rollout set max_input_bytes=p_max_bytes where singleton;
+end $$;
 create function public.prepare_user_upload(p_purpose text,p_draft_id uuid default null) returns public.user_uploads
 language plpgsql security definer set search_path='' as $$
 declare uid uuid:=private.require_user(); rid uuid:=gen_random_uuid(); d public.card_drafts; result public.user_uploads;
@@ -81,14 +96,14 @@ begin
  elsif p_purpose is distinct from 'avatar' or p_draft_id is not null then raise exception 'Invalid upload purpose' using errcode='22023';
  end if;
  insert into public.user_uploads(id,user_id,purpose,draft_id,storage_path) values(rid,uid,p_purpose,p_draft_id,
- uid::text||case when p_purpose='avatar' then '/avatars/' else '/drafts/'||p_draft_id::text||'/' end||rid::text||'.png') returning * into result;
+ uid::text||case when p_purpose='avatar' then '/avatar/' else '/drafts/'||p_draft_id::text||'/' end||rid::text||'.png') returning * into result;
  return result;
 end $$;
 create function private.guard_file_reference() returns trigger
 language plpgsql security definer set search_path='' as $$
 declare path text; owner_id uuid; purpose_value text; draft_value uuid;
 begin
- if TG_TABLE_NAME='profiles' then path:=new.avatar_url; owner_id:=new.id; purpose_value:='avatar';
+ if TG_TABLE_NAME='profiles' then path:=new.avatar_path; owner_id:=new.id; purpose_value:='avatar';
  else path:=new.uploaded_image_path; owner_id:=new.user_id; purpose_value:='draft'; draft_value:=new.id;
  end if;
  if path is null then return new; end if;
@@ -98,10 +113,9 @@ begin
  end if;
  return new;
 end $$;
--- Existing non-null avatar paths must be audited before installing this trigger.
--- Unchanged legacy paths are tolerated until replaced; new arbitrary paths are rejected.
-create trigger guard_avatar_reference before insert or update of avatar_url on public.profiles for each row
- when(new.avatar_url is not null) execute function private.guard_file_reference();
+-- Legacy avatar_url values stay untouched; every new avatar_path must be validated.
+create trigger guard_avatar_reference before insert or update of avatar_path on public.profiles for each row
+ when(new.avatar_path is not null) execute function private.guard_file_reference();
 create trigger guard_draft_photo_reference before insert or update of uploaded_image_path on public.card_drafts for each row
  execute function private.guard_file_reference();
 create function private.retire_user_file(p_path text) returns void
@@ -115,7 +129,7 @@ create function private.queue_replaced_user_file() returns trigger
 language plpgsql security definer set search_path='' as $$
 begin
  if TG_TABLE_NAME='profiles' then
-  if TG_OP='DELETE' or old.avatar_url is distinct from new.avatar_url then perform private.retire_user_file(old.avatar_url); end if;
+  if TG_OP='DELETE' or old.avatar_path is distinct from new.avatar_path then perform private.retire_user_file(old.avatar_path); end if;
  else
   if TG_OP='DELETE' or old.uploaded_image_path is distinct from new.uploaded_image_path then perform private.retire_user_file(old.uploaded_image_path); end if;
   if TG_TABLE_NAME='generated_cards' and TG_OP='DELETE' then
@@ -126,7 +140,7 @@ begin
  end if;
  return null;
 end $$;
-create trigger queue_old_avatar after update of avatar_url or delete on public.profiles for each row execute function private.queue_replaced_user_file();
+create trigger queue_old_avatar after update of avatar_path or delete on public.profiles for each row execute function private.queue_replaced_user_file();
 create trigger queue_old_draft_photo after update of uploaded_image_path or delete on public.card_drafts for each row execute function private.queue_replaced_user_file();
 create trigger queue_old_generation_photo after delete on public.generated_cards for each row execute function private.queue_replaced_user_file();
 create function public.finish_user_upload(p_id uuid,p_bytes integer,p_width integer,p_height integer) returns public.user_uploads
@@ -142,7 +156,7 @@ begin
  and metadata->>'mimetype'='image/png' and (metadata->>'size')::bigint=p_bytes) then raise exception 'Validated PNG object missing' using errcode='22023'; end if;
  update public.user_uploads set state='ready',bytes=p_bytes,width=p_width,height=p_height where id=u.id returning * into u;
  if u.purpose='avatar' then
-  update public.profiles set avatar_url=u.storage_path where id=u.user_id;
+  update public.profiles set avatar_path=u.storage_path where id=u.user_id;
   if not found then raise exception 'Profile missing' using errcode='P0002'; end if;
  else
   select * into d from public.card_drafts where id=u.draft_id and user_id=u.user_id and archived_at is null for update;
@@ -157,7 +171,7 @@ create function public.remove_user_file(p_purpose text,p_draft_id uuid default n
 language plpgsql security definer set search_path='' as $$
 declare uid uuid:=private.require_user();
 begin
- if p_purpose='avatar' and p_draft_id is null then update public.profiles set avatar_url=null where id=uid;
+ if p_purpose='avatar' and p_draft_id is null then update public.profiles set avatar_path=null where id=uid;
  elsif p_purpose='draft' then update public.card_drafts set uploaded_image_path=null where id=p_draft_id and user_id=uid;
  else raise exception 'Invalid upload purpose' using errcode='22023'; end if;
  if not found then raise exception 'Record not found' using errcode='P0002'; end if;
@@ -217,13 +231,13 @@ end $$;
 do $$ declare f record; begin
  for f in select p.oid::regprocedure signature from pg_proc p join pg_namespace n on n.oid=p.pronamespace
  where n.nspname='private' and p.proname in ('user_file_referenced','card_supports_photo','guard_file_reference','retire_user_file','queue_replaced_user_file','capture_generation_photo','queue_deleted_upload')
- or n.nspname='public' and p.proname in ('account_avatar_available','user_file_storage_available','enable_user_file_storage','card_photo_available','prepare_user_upload','finish_user_upload','remove_user_file','abort_user_upload','pending_user_file_cleanup','confirm_user_file_cleanup')
+ or n.nspname='public' and p.proname in ('user_file_upload_settings','set_user_file_upload_limit','account_avatar_available','user_file_storage_available','enable_user_file_storage','card_photo_available','prepare_user_upload','finish_user_upload','remove_user_file','abort_user_upload','pending_user_file_cleanup','confirm_user_file_cleanup')
  loop execute format('revoke all on function %s from public,anon,authenticated',f.signature); end loop;
 end $$;
 grant execute on function private.user_file_referenced(text) to authenticated;
 grant execute on function public.card_photo_available(uuid) to anon,authenticated;
-grant execute on function public.account_avatar_available(),public.user_file_storage_available(),public.prepare_user_upload(text,uuid),public.remove_user_file(text,uuid) to authenticated;
-grant execute on function public.enable_user_file_storage(boolean),public.finish_user_upload(uuid,integer,integer,integer),public.abort_user_upload(uuid),public.pending_user_file_cleanup(uuid),public.confirm_user_file_cleanup(text,text) to service_role;
+grant execute on function public.user_file_upload_settings(),public.account_avatar_available(),public.user_file_storage_available(),public.prepare_user_upload(text,uuid),public.remove_user_file(text,uuid) to authenticated;
+grant execute on function public.set_user_file_upload_limit(integer),public.enable_user_file_storage(boolean),public.finish_user_upload(uuid,integer,integer,integer),public.abort_user_upload(uuid),public.pending_user_file_cleanup(uuid),public.confirm_user_file_cleanup(text,text) to service_role;
 
 create or replace function private.validate_field_config() returns trigger
 language plpgsql set search_path = '' as $$

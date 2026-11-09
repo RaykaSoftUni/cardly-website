@@ -1,9 +1,9 @@
 import { el } from '../../utils/dom.js';
 import { createForm } from '../forms/fields.js';
 import { button } from '../ui.js';
-import { uploadUserImage, removeUserImage, validateUserImage } from '../../services/user-files.js';
+import { uploadUserImage, removeUserImage, validateUserImage, userImageHint } from '../../services/user-files.js';
 
-export function createDraftPhoto({ getDraftId, hasPhoto=false, onSaved, onRemoved }) {
+export function createDraftPhoto({ getDraftId, maxBytes, hasPhoto=false, onSaved, onRemoved }) {
   let selectedURL=null;
   let selection=0;
   const image=el('img',{className:'draft-photo-selection',alt:'Selected photo preview',hidden:true});
@@ -15,7 +15,7 @@ export function createDraftPhoto({ getDraftId, hasPhoto=false, onSaved, onRemove
     try{const draftId=await getDraftId(true);if(!draftId)return;const result=await removeUserImage({purpose:'draft',draftId});await onRemoved();hasPhoto=false;clear();form.reset();feedback.textContent=result.cleanupFailed?'Photo removed. File cleanup is queued for retry.':'Photo removed.';}
     catch(error){feedback.textContent=error.message;}finally{remove.disabled=!hasPhoto;}
   }});
-  const form=createForm({fields:[{name:'photo',label:'Recipient photo',type:'file',required:true,accept:'image/jpeg,image/png,image/webp',hint:'Private JPEG, PNG or WebP · up to 2 MiB · 16 million pixels. Uploading saves an owned draft first.'}],submitLabel:'Upload card photo',onChange:async({photo})=>{
+  const form=createForm({fields:[{name:'photo',label:'Recipient photo',type:'file',required:true,accept:'image/jpeg,image/png,image/webp',hint:userImageHint(maxBytes)+' Uploading saves an owned draft first.'}],submitLabel:'Upload card photo',onChange:async({photo})=>{
     clear();const attempt=selection;
     if(!photo)return;
     try{await validateUserImage(photo);if(attempt!==selection)return;selectedURL=URL.createObjectURL(photo);image.src=selectedURL;image.hidden=false;form.setError('');}

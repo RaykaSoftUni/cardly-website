@@ -1,11 +1,15 @@
 import { supabaseClient as client } from './supabase-client.js';
-import { imageHeader, inputLimit, allowedTypes } from '../../supabase/functions/_shared/image-validation.js';
+import { imageHeader, validateImageFile, limitLabel } from '../../supabase/functions/_shared/image-validation.js';
 
-export const userImageLimit = inputLimit;
+export async function userUploadLimit() {
+  const {data,error}=await client.rpc('user_file_upload_settings');
+  if(error || !Number.isInteger(data?.max_bytes) || data.max_bytes<1024 || data.max_bytes>10485760) throw invalid('Upload settings could not be loaded. Please try again.');
+  return data.max_bytes;
+}
+export const userImageHint = max => 'JPEG, PNG or WebP · up to ' + limitLabel(max) + ' · 16 million pixels.';
 const invalid = message => Object.assign(new Error(message), { code:'validation' });
 export async function validateUserImage(file) {
-  if(!file||!allowedTypes.includes(file.type))throw invalid('Choose a JPEG, PNG or WebP image.');
-  if(!file.size||file.size>inputLimit)throw invalid('Choose an image no larger than 2 MiB.');
+  try { validateImageFile(file, await userUploadLimit()); } catch(error) { throw invalid(error.message); }
   try{imageHeader(new Uint8Array(await file.arrayBuffer()),file.type);}catch(error){throw invalid(error.message);}
   let bitmap;
   try{bitmap=await createImageBitmap(file);}catch{throw invalid('Choose a valid, decodable image.');}
@@ -18,7 +22,7 @@ async function requireUser() {
 }
 export async function privateImageBlob(path) {
   const user=await requireUser();
-  if(typeof path!=='string'||!path.startsWith(`${user.id}/`)||path.includes('..')||!/^[-a-f0-9]+\/(avatars|drafts)\//.test(path))throw invalid('This image does not belong to your account.');
+  if(typeof path!=='string'||!path.startsWith(`${user.id}/`)||path.includes('..')||!/^[-a-f0-9]+\/(avatar|drafts)\//.test(path))throw invalid('This image does not belong to your account.');
   const {data,error}=await client.storage.from('user-uploads').download(path);
   if(error)throw invalid('Your private image could not be loaded. Please sign in and try again.');
   return data;

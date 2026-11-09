@@ -19,8 +19,8 @@ message, sender, and the design's original artwork. Private photos have a prepar
 pipeline; remote rollout is pending. See [private user files](user-file-storage.md).
 AI images remain unsupported. Other snapshot layouts requiring additional
 assets are rejected. Custom templates require their own compatible
-renderer before export. No upload pipeline, AI integration, or image storage was
-introduced.
+renderer before export. Private upload rollout is documented separately; AI
+integration remains unimplemented.
 
 Private saved generation snapshots come from the existing owner-restricted RPC.
 Supported free snapshots can render locally using their saved design key and

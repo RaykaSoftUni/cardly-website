@@ -1,5 +1,10 @@
 // Shared by the trusted uploader and browser validation; no user-supplied dimensions are trusted.
-export const inputLimit = 2 * 1024 * 1024;
+export const inputLimit = 5 * 1024 * 1024;
+export const limitLabel = bytes => (bytes / (1024 * 1024)).toLocaleString('en-US', { maximumFractionDigits: 3 }) + ' MiB';
+export function validateImageFile(file, maxBytes = inputLimit) {
+  if (!file || !allowedTypes.includes(file.type)) throw new Error('Choose a JPEG, PNG or WebP image.');
+  if (!file.size || file.size > maxBytes) throw new Error('Choose an image no larger than ' + limitLabel(maxBytes) + '.');
+}
 export const pixelLimit = 16000000;
 export const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
 export function imageHeader(bytes, mime) {

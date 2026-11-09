@@ -3,7 +3,6 @@ import { supabaseClient as client, authCallbackError } from './supabase-client.j
 
 export const passwordRequirements = 'Use 8–128 characters. Additional password strength requirements may apply.';
 export const recoveryFailed = authCallbackError;
-export const avatarLimit = 2 * 1024 * 1024;
 
 export function accountError(error) {
   if (error?.code === 'validation') return error.message;
@@ -24,11 +23,21 @@ async function requireUser() {
   if (!user) throw invalid('Your session has expired. Please sign in again.');
   return user;
 }
+async function loadProfile(id) {
+  const result = await client.from('profiles').select('display_name,avatar_path').eq('id', id).single();
+  if (result.error && ['42703','PGRST204'].includes(result.error.code)) {
+    // Keep the existing account page usable before the upload migration is applied.
+    const legacy = await client.from('profiles').select('display_name').eq('id', id).single();
+    if (legacy.data) legacy.data.avatar_path = null;
+    return legacy;
+  }
+  return result;
+}
 export async function loadAccount() {
   const user = await currentUser();
   if (!user) return null;
   const [profile, role] = await Promise.all([
-    client.from('profiles').select('display_name,avatar_url').eq('id', user.id).single(),
+    loadProfile(user.id),
     client.from('user_roles').select('role').eq('user_id', user.id).single(),
   ]);
   return { user, profile: checked(profile), role: checked(role).role };
@@ -37,7 +46,7 @@ export async function saveProfile(displayName) {
   const name = displayName.trim();
   if (!name || [...name].length > 80 || /[\u0000-\u001f\u007f]/u.test(name)) throw invalid('Enter a display name of 1–80 characters without control characters.');
   const user = await requireUser();
-  return checked(await client.from('profiles').update({ display_name: name }).eq('id', user.id).select('display_name,avatar_url').single());
+  return checked(await client.from('profiles').update({ display_name: name }).eq('id', user.id).select('display_name').single());
 }
 export function validatePassword(password, confirmation) {
   if (password.length < 8 || password.length > 128 || !password.trim()) throw invalid(passwordRequirements);

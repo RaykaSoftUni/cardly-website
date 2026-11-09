@@ -1,5 +1,5 @@
 import { createDraftPhoto } from '../components/cards/draft-photo.js';
-import { cardPhotoAvailable, privateImageData, flushUserFileCleanup } from '../services/user-files.js';
+import { userUploadLimit, cardPhotoAvailable, privateImageData, flushUserFileCleanup } from '../services/user-files.js';
 import { confirmDialog } from '../components/feedback/confirm-dialog.js';
 import { createCardExport } from '../components/cards/card-export.js';
 import { validateExportDesign } from '../services/card-export.js';
@@ -131,7 +131,7 @@ async function detail(main,pageId){
  let photoControls=null;
  if(c.personalization_fields.some(f=>f.field_type==='image')&&await cardPhotoAvailable(c.id)){
   const {data:{user}}=await supabaseClient.auth.getUser();
-  if(user)photoControls=createDraftPhoto({hasPhoto:!!photoPath,getDraftId:async(existingOnly=false)=>existingOnly?draftId:form.validate()?persistDraft():null,onSaved:async path=>{
+  if(user)photoControls=createDraftPhoto({maxBytes:await userUploadLimit(),hasPhoto:!!photoPath,getDraftId:async(existingOnly=false)=>existingOnly?draftId:form.validate()?persistDraft():null,onSaved:async path=>{
    photoPath=path;pngExport.invalidate();preview.setPhoto(await privateImageData(path));
   },onRemoved:async()=>{photoPath=null;pngExport.invalidate();preview.setPhoto(null);}});
   else photoControls=el('p',{className:'field-hint mt-3'},['Sign in to upload a private photo. ',button({label:'Sign in',href:'/login/',variant:'quiet'})]);

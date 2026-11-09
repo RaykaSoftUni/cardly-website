@@ -15,8 +15,8 @@ test('live private uploads isolate two ordinary users and enforce admin boundari
  const au=(await a.auth.getUser()).data.user,bu=(await b.auth.getUser()).data.user;
  for(const [client,user]of [[a,au],[b,bu]]){
   const role=await client.from('user_roles').select('role').eq('user_id',user.id).single();expect(role.data?.role).toBe('user');
-  const profile=await client.from('profiles').select('avatar_url').eq('id',user.id).single();
-  expect(profile.data?.avatar_url,'Use test accounts with empty avatars to preserve existing user files.').toBeNull();
+  const profile=await client.from('profiles').select('avatar_path').eq('id',user.id).single();
+  expect(profile.data?.avatar_path,'Use test accounts with empty avatars to preserve existing user files.').toBeNull();
  }
  expect((await a.rpc('user_file_storage_available')).data).toBe(true);
  const upload=async(client,purpose,draftId)=>{
@@ -37,8 +37,8 @@ test('live private uploads isolate two ordinary users and enforce admin boundari
   expect((await b.storage.from('user-uploads').upload(ap,png,{contentType:'image/png',upsert:true})).error).toBeTruthy();
   await b.storage.from('user-uploads').remove([ap]);
   expect((await a.storage.from('user-uploads').list(au.id+'/avatars')).data.some(o=>ap.endsWith('/'+o.name))).toBe(true);
-  expect((await a.from('profiles').update({avatar_url:bp}).eq('id',au.id)).error).toBeTruthy();
-  const forged=await b.from('profiles').update({avatar_url:bp}).eq('id',au.id).select('id');expect(forged.data).toEqual([]);
+  expect((await a.from('profiles').update({avatar_path:bp}).eq('id',au.id)).error).toBeTruthy();
+  const forged=await b.from('profiles').update({avatar_path:bp}).eq('id',au.id).select('id');expect(forged.data).toEqual([]);
   const replacement=await upload(a,'avatar');expect(replacement).not.toBe(ap);
   expect((await a.storage.from('user-uploads').list(au.id+'/avatars')).data.some(o=>ap.endsWith('/'+o.name))).toBe(false);
   const cards=await a.rpc('get_card_catalogue',{p_search:'A birthday worth keeping'});const card=cards.data.find(c=>c.slug==='demo-photo-keepsake');expect(card).toBeTruthy();

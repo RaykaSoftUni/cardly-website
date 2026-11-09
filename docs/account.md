@@ -3,6 +3,9 @@
 Current private-file implementation: see [user file Storage](user-file-storage.md).
 It supersedes the older pending `avatars` bucket proposal below with validated
 Edge Function uploads into `user-uploads`. Remote rollout is still pending.
+New uploads use `profiles.avatar_path` and `<user-id>/avatar/<upload-id>.png`.
+The configurable input limit defaults to 5 MiB; saved images are privately fetched
+with the authenticated session and displayed through revocable local object URLs.
 
 `/account/` requires a verified Supabase Auth user. Guests receive a sign-in link
 that returns to Account after login. A user can edit their display name, view their
