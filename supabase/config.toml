@@ -1,0 +1,8 @@
+# Gateway JWT verification AND an Auth getUser call protect uploads.
+[functions.user-file-upload]
+verify_jwt = true
+entrypoint = "./functions/user-file-upload/index.js"
+
+[functions.user-file-cleanup]
+verify_jwt = true
+entrypoint = "./functions/user-file-cleanup/index.js"

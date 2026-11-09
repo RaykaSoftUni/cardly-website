@@ -1,3 +1,6 @@
+import { createDraftPhoto } from '../components/cards/draft-photo.js';
+import { cardPhotoAvailable, privateImageData, flushUserFileCleanup } from '../services/user-files.js';
+import { confirmDialog } from '../components/feedback/confirm-dialog.js';
 import { createCardExport } from '../components/cards/card-export.js';
 import { validateExportDesign } from '../services/card-export.js';
 import { el } from '../utils/dom.js';
@@ -17,7 +20,7 @@ const notice=()=>el('p',{className:'sample-notice'},'Demo collection · Original
 const eligible=c=>c.is_available&&c.pricing_type==='free';
 const status=c=>priceAndAvailability({paid:c.pricing_type==='paid',price:c.price===null?undefined:Number(c.price),available:c.is_available,published:true});
 const params=()=>new URLSearchParams(location.search);
-function returnQuery(){const p=params();p.delete('id');return p.toString();}
+function returnQuery(){const p=params();p.delete('id');p.delete('draft');return p.toString();}
 function link(path,id,query=returnQuery()){const p=new URLSearchParams(query);if(id)p.set('id',id);return `${path}${p.size?'?'+p:''}`;}
 function artwork(c,size='thumb') {
  const holder=el('div',{},createDemoArtwork(c,size));
@@ -64,9 +67,9 @@ async function browse(main,pageId){
  if(pageId==='home')main.replaceChildren(intro('For their day. In their own way.','Thoughtful designs, a name they know, and words only you would say.'),notice(),button({label:'Browse all cards',href:'/cards/'}),section({title:'A little inspiration',children:[el('div',{className:'card-grid'},inspiration.map(c=>tile(c)))]}));
  else {await update();main.replaceChildren(intro('Find their kind of card.','Explore distinct designs for birthdays, thank-yous and new chapters.'),notice(),form,info,grid);}
 }
-function definitions(c){return c.personalization_fields.map(f=>({name:f.field_key,label:f.label,type:f.field_type==='select'?'text':f.field_type,required:f.is_required,maxLength:f.config.max_length??1000,min:f.config.min,max:f.config.max,minLength:f.config.min_length,options:f.field_type==='select'?[{value:'',label:'Choose an option'},...f.config.options]:undefined,hint:f.is_required ? 'Required before saving or generating this card.' : f.help_text||f.placeholder}));}
+function definitions(c){return c.personalization_fields.filter(f=>f.field_type!=='image').map(f=>({name:f.field_key,label:f.label,type:f.field_type==='select'?'text':f.field_type,required:f.is_required,maxLength:f.config.max_length??1000,min:f.config.min,max:f.config.max,minLength:f.config.min_length,options:f.field_type==='select'?[{value:'',label:'Choose an option'},...f.config.options]:undefined,hint:f.is_required ? 'Required before saving or generating this card.' : f.help_text||f.placeholder}));}
 function valuesFor(c,values){
- const out={};for(const f of c.personalization_fields){const value=values[f.field_key];if(value!==''&&value!==null&&value!==undefined)out[f.field_key]=f.field_type==='number'?Number(value):value;}
+ const out={};for(const f of c.personalization_fields.filter(f=>f.field_type!=='image')){const value=values[f.field_key];if(value!==''&&value!==null&&value!==undefined)out[f.field_key]=f.field_type==='number'?Number(value):value;}
  return out;
 }
 async function detail(main,pageId){
@@ -82,6 +85,13 @@ async function detail(main,pageId){
  if(!eligible(c))return main.replaceChildren(back,intro('Personalization unavailable','Choose a published, available free card.'),status(c));
  const savedKey=`cardly-demo-input:${id}`;
  let initial={};try{initial=JSON.parse(sessionStorage.getItem(savedKey)||'{}');}catch{}
+ let draftId=params().get('draft')||null;
+ let photoPath=null;
+ if(draftId){
+  const {data,error}=await supabaseClient.from('card_drafts').select('*').eq('id',draftId).eq('card_id',c.id).is('archived_at',null).single();
+  if(error||!data)return main.replaceChildren(back,intro('Draft not found','Sign in with the account that owns this draft.'),button({label:'Sign in',href:'/login/'}));
+  initial=data.personalization_data;photoPath=data.uploaded_image_path||null;
+ }
  const preview=createDesignPreview(c.design_key,initial);
  const feedback=el('p',{role:'status','aria-live':'polite',className:'field-hint'});
  let pngExport;
@@ -92,7 +102,7 @@ async function detail(main,pageId){
   const current=await cardDetail(c.id);
   if(!current||!eligible(current))throw new Error('This card is no longer available for free generation.');
   if(current.design_key!==c.design_key)throw new Error('This design changed. Reload the editor before generating.');
-  return {key:c.design_key,values:valuesFor(c,form.values())};
+  return {key:c.design_key,values:valuesFor(c,form.values()),photoData:photoPath?await privateImageData(photoPath):null};
  }});
  const report=error=>{feedback.textContent=error.message;const field=c.personalization_fields.find(f=>error.message.includes(f.field_key));if(field)form.setErrors({[field.field_key]:error.message});};
  const save=button({label:'Save my draft',variant:'outline-primary',onClick:async()=>{
@@ -100,7 +110,7 @@ async function detail(main,pageId){
   const {data:{session}}=await supabaseClient.auth.getSession();
   if(!session){feedback.textContent='Sign in to save. Your input stays in this browser tab.';return;}
   save.disabled=true;
-  try{const d=await rpc('create_card_draft',{p_card_id:c.id,p_personalization_data:valuesFor(c,form.values())});feedback.textContent='Draft saved to your account.';generate.hidden=false;generate.dataset.draftId=d.id;}
+  try{await persistDraft();feedback.textContent='Draft saved to your account.';}
   catch(error){report(error);}
   finally{save.disabled=false;}
  }});
@@ -110,8 +120,25 @@ async function detail(main,pageId){
   try{await rpc('update_card_draft',{p_draft_id:generate.dataset.draftId,p_personalization_data:valuesFor(c,form.values())});const result=await rpc('generate_card',{p_draft_id:generate.dataset.draftId,p_expected_price:0});feedback.textContent=result.status==='processing'?'Demo generation job saved. You can generate a PNG locally; the server job remains processing.':'The price changed. Review the card before continuing.';}
   catch(error){report(error);}
   finally{generate.disabled=false;}
- }});generate.hidden=true;
- main.replaceChildren(back,intro(c.title,'Your words, in this design’s own layout.'),notice(),el('div',{className:'editor-layout'},[el('section',{className:'surface-panel'},[form.element,pngExport.element,save,generate,feedback]),el('aside',{className:'preview-panel','aria-label':'Live card preview'},preview.element)]));
+ }});generate.hidden=!draftId;generate.dataset.draftId=draftId||'';
+ async function persistDraft(){
+  const values=valuesFor(c,form.values());
+  const d=draftId?await rpc('update_card_draft',{p_draft_id:draftId,p_personalization_data:values}):await rpc('create_card_draft',{p_card_id:c.id,p_personalization_data:values});
+  draftId=d.id;generate.hidden=false;generate.dataset.draftId=d.id;
+  const url=new URL(location.href);url.searchParams.set('draft',d.id);history.replaceState(null,'',url.pathname+url.search);
+  return d.id;
+ }
+ let photoControls=null;
+ if(c.personalization_fields.some(f=>f.field_type==='image')&&await cardPhotoAvailable(c.id)){
+  const {data:{user}}=await supabaseClient.auth.getUser();
+  if(user)photoControls=createDraftPhoto({hasPhoto:!!photoPath,getDraftId:async(existingOnly=false)=>existingOnly?draftId:form.validate()?persistDraft():null,onSaved:async path=>{
+   photoPath=path;pngExport.invalidate();preview.setPhoto(await privateImageData(path));
+  },onRemoved:async()=>{photoPath=null;pngExport.invalidate();preview.setPhoto(null);}});
+  else photoControls=el('p',{className:'field-hint mt-3'},['Sign in to upload a private photo. ',button({label:'Sign in',href:'/login/',variant:'quiet'})]);
+ }
+ if(photoPath){try{preview.setPhoto(await privateImageData(photoPath));}catch{feedback.textContent='Your private photo could not be loaded. PNG export will require access to it.';}}
+
+ main.replaceChildren(back,intro(c.title,'Your words, in this design’s own layout.'),notice(),el('div',{className:'editor-layout'},[el('section',{className:'surface-panel'},[form.element,photoControls,pngExport.element,save,generate,feedback]),el('aside',{className:'preview-panel','aria-label':'Live card preview'},preview.element)]));
 }
 async function login(main){
  const {data:{session}}=await supabaseClient.auth.getSession();
@@ -130,18 +157,29 @@ async function collection(main){
  if(!session)return main.replaceChildren(intro('Your personal collection','Sign in to see your own drafts and demo generations.'),button({label:'Sign in',href:'/login/'}));
  const [generations,drafts]=await Promise.all([rpc('get_generated_cards'),supabaseClient.from('card_drafts').select('*').is('archived_at',null).order('updated_at',{ascending:false})]);
  if(drafts.error)throw drafts.error;
- const draftTiles=await Promise.all(drafts.data.map(async d=>{const c=await cardDetail(d.card_id);return el('article',{className:'surface-panel'},[el('h3',{},c?.title||'Saved draft'),el('p',{},`For ${d.personalization_data.recipient_name||'someone special'}`),button({label:'Reopen preview',href:link('/card-editor/',d.card_id,''),onClick:()=>sessionStorage.setItem(`cardly-demo-input:${d.card_id}`,JSON.stringify(d.personalization_data))})]);}));
- const generated=generations.map(g=>{
+ const draftTiles=await Promise.all(drafts.data.map(async d=>{const c=await cardDetail(d.card_id);return el('article',{className:'surface-panel'},[
+  el('h3',{},c?.title||'Saved draft'),el('p',{},`For ${d.personalization_data.recipient_name||'someone special'}`),
+  button({label:'Reopen preview',href:link('/card-editor/',d.card_id,'draft='+encodeURIComponent(d.id)),onClick:()=>sessionStorage.setItem(`cardly-demo-input:${d.card_id}`,JSON.stringify(d.personalization_data))}),
+  button({label:'Delete draft',variant:'quiet',onClick:async()=>{
+   if(!await confirmDialog({title:'Delete this draft?',message:'Your draft will be archived. Unused photos are queued for cleanup; photos used by saved generation snapshots are retained.',confirmLabel:'Delete draft'}))return;
+   try{await rpc('delete_card_draft',{p_draft_id:d.id,p_archive:true});await flushUserFileCleanup();await collection(main);}catch{main.append(el('p',{role:'alert'},'The draft could not be deleted. Please try again.'));}
+  }}),
+ ]);}));
+ const generated=await Promise.all(generations.map(async g=>{
   const key=g.template_snapshot?.layout_config?.design_key;
+  const savedPreview=createDesignPreview(key,g.personalization_data);
+  let photoError=false;
+  if(g.uploaded_image_path){try{savedPreview.setPhoto(await privateImageData(g.uploaded_image_path));}catch{photoError=true;}}
   const content=el('div',{className:'catalog-card-body'},[el('h3',{},g.card_snapshot.title),el('p',{},`Saved snapshot · template v${g.template_version} · server status: ${g.status}`)]);
+  if(photoError)content.append(el('p',{className:'field-hint'},'The private photo could not be loaded. Sign in and retry before exporting.'));
   let supported=g.card_snapshot.pricing_type==='free'&&g.status!=='failed';
   try{validateExportDesign(key,g.template_snapshot?.layout_config);}catch{supported=false;}
   if(supported){
-   const png=createCardExport({title:g.card_snapshot.title,getInput:async()=>({key,values:g.personalization_data,layout:g.template_snapshot.layout_config})});
+   const png=createCardExport({title:g.card_snapshot.title,getInput:async()=>({key,values:g.personalization_data,layout:g.template_snapshot.layout_config,photoData:g.uploaded_image_path?await privateImageData(g.uploaded_image_path):null})});
    content.append(el('p',{className:'muted small'},'Generate a local PNG from these saved words and this design. This does not complete the server job.'),png.element);
   }else content.append(el('p',{className:'muted small'},'Local PNG export is unavailable for this snapshot.'));
-  return el('article',{className:'catalog-card'},[createDesignPreview(key,g.personalization_data).element,content]);
- });
+  return el('article',{className:'catalog-card'},[savedPreview.element,content]);
+ }));
  main.replaceChildren(intro('Your little collection of joy.','Only your account’s drafts and generation previews are shown.'),notice(),section({title:'Saved drafts',children:[el('div',{className:'card-grid'},draftTiles.length?draftTiles:emptyState({title:'No saved drafts',description:'Personalize an available free card to start.'}))]}),section({title:'Saved generation snapshots',children:[el('div',{className:'card-grid'},generated.length?generated:emptyState({title:'No demo generations yet',description:'Save a draft to create a generation job.'}))]}));
 }
 export async function renderCatalogPage(main,pageId){

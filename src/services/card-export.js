@@ -5,7 +5,7 @@ export const PNG_SIZE = Object.freeze({ width: 1500, height: 2000 });
 // Only known, self-contained renderers are supported. Never substitute another design.
 export function validateExportDesign(key, layout) {
   if (!Object.hasOwn(designs, key)) throw new Error('PNG export is not supported for this template yet.');
-  if (layout && (layout.canvas?.width !== 600 || layout.canvas?.height !== 800 || layout.photo_upload || layout.background_path || layout.image_regions?.length || layout.decorative_assets?.length)) {
+  if (layout && (layout.canvas?.width !== 600 || layout.canvas?.height !== 800 || (layout.photo_upload && key!=='photo-keepsake') || layout.background_path || layout.image_regions?.length || layout.decorative_assets?.length)) {
     throw new Error('This template requires a renderer that supports its artwork and dimensions. PNG export is unavailable.');
   }
 }
@@ -17,9 +17,9 @@ export function cardFilename(title = 'personalized-card') {
   return `${slug || 'personalized-card'}.png`;
 }
 
-export async function renderCardPng(key, values, layout) {
+export async function renderCardPng(key, values, layout, photoData = null) {
   validateExportDesign(key, layout);
-  const svg = renderCardSvg(key, values, { animate: false }).replace('width="600" height="800"', 'width="1500" height="2000"');
+  const svg = renderCardSvg(key, values, { animate: false, photoData }).replace('width="600" height="800"', 'width="1500" height="2000"');
   const source = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
   const canvas = document.createElement('canvas');
   canvas.width = PNG_SIZE.width;

@@ -461,3 +461,30 @@ encoding recovery, paid/unavailable rejection, owned snapshot export, responsive
 layout, reduced motion and accessibility. A downloaded personalized space card was
 visually inspected. The reduced-motion screenshot test now scrolls the image into
 view before taking either sample to avoid scroll-position rasterization changes.
+
+## Private user-file Storage — local implementation; remote acceptance pending
+
+The explicit File Storage request authorizes avatars and optional draft photos,
+an isolated private user-uploads bucket, validating JavaScript Edge Functions,
+owner-only policies and registry references, safe replacement, retained generation
+photos, queued Storage API cleanup and two-user/admin security verification.
+The existing admin asset manager remains separate. A photo-ready birthday design
+and seed are prepared. No remote SQL or function deployment has been performed.
+
+The unified proposal is in supabase/pending/user_file_storage.sql; the older
+account_management.sql proposal is superseded. Feature flags default off until
+remote history is inspected, the migration is applied with its actual version,
+functions are deployed, the photo card is seeded and the capability is enabled.
+See [user file Storage](user-file-storage.md) for operation and verification.
+
+Verification reviewed on 9 November 2026: all 21 entries build and production
+route/asset checks pass. The browser suite reports 61 passed and six skipped:
+four authenticated live tests need credentials, and two public live smoke tests
+require explicit opt-in. The live two-user/admin storage test was not executed.
+In an isolated PostgreSQL engine, the full migration chain, pending proposal and
+seed apply, and all six SQL authorization suites pass. Both Edge Function
+entrypoints pass Deno checks and both image-validation tests pass. Supabase Auth,
+catalogue and Storage reachability checks return HTTP 200. Remote work is deferred
+at the user's request until operator access and dedicated test-account passwords
+are available; the feature remains pending remote acceptance. These local results
+do not satisfy the requested live cross-user acceptance criteria.

@@ -1,6 +1,7 @@
 // Public renderer definitions. Private template configuration never enters this module.
 import { discoCat, catnapCake, catMotion } from './cat-artwork.js';
 export const designs = {
+ 'photo-keepsake': { background:'#fff6eb', ink:'#3b4d46', headline:'A birthday worth keeping.', message:'Here’s to you, and all the memories still to come.', composition:'photo' },
  'disco-whiskers': { background: '#e9e1ff', ink: '#30244c', headline: 'Birthday on repeat.', message: 'Good tunes, great cake, and all your favourite people.', composition: 'disco-cat', animated: true },
  'cake-catnaps': { background: '#fff4e3', ink: '#234b43', headline: 'Cake first. Catnap later.', message: 'A little sweetness. A lot of love. A day just for you.', composition: 'catnap', animated: true },
  'birthday-type': { background: '#f5ebdf', ink: '#263f37', headline: 'A very happy birthday.', message: 'A new year of little wonders.', composition: 'type' },
@@ -42,7 +43,7 @@ function text(value, x, y, width, size, { maxLines = 3, align = 'middle', family
  return `<text x="${x}" y="${y}" text-anchor="${align}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="${fill}"><title>${escape(value)}</title>${shown.map((v,i)=>`<tspan x="${x}" dy="${i ? size * 1.2 : 0}">${escape(v)}</tspan>`).join('')}</text>`;
 }
 const star = (x,y,r,color) => `<path d="M${x} ${y-r} L${x+r*.3} ${y-r*.3} L${x+r} ${y} L${x+r*.3} ${y+r*.3} L${x} ${y+r} L${x-r*.3} ${y+r*.3} L${x-r} ${y} L${x-r*.3} ${y-r*.3}Z" fill="${color}"/>`;
-export function renderCardSvg(key, values = {}, { animate = true, replay = 0 } = {}) {
+export function renderCardSvg(key, values = {}, { animate = true, replay = 0, photoData = null } = {}) {
  const d = designs[key] || designs['birthday-type'];
  const name = values.recipient_name || 'Someone wonderful';
  const sender = values.sender_name ? `From ${values.sender_name}` : 'With a little love';
@@ -54,7 +55,12 @@ export function renderCardSvg(key, values = {}, { animate = true, replay = 0 } =
  const age = values.recipient_age ? `${values.recipient_age}` : '';
  let art = ''; let regions = '';
  const body = (y=540, color=d.ink) => text(message,300,y,450,24,{maxLines:4,fill:color}) + text(sender,300,740,440,19,{family:'Arial,sans-serif',fill:color,maxLines:1});
- if (d.composition === 'disco-cat' || d.composition === 'catnap') {
+ if (d.composition === 'photo') {
+  const photo = typeof photoData === 'string' && /^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(photoData) ? photoData : null;
+  art = '<rect x="45" y="40" width="510" height="720" rx="22" fill="none" stroke="#d9c3a2" stroke-width="2"/><rect x="80" y="160" width="440" height="330" rx="12" fill="#e3ddcf"/>';
+  art += photo ? '<defs><clipPath id="recipient-photo"><rect x="80" y="160" width="440" height="330" rx="12"/></clipPath></defs><image x="80" y="160" width="440" height="330" preserveAspectRatio="xMidYMid slice" clip-path="url(#recipient-photo)" href="'+escape(photo)+'"/>' : text('YOUR FAVOURITE MEMORY',300,330,380,18,{family:'Arial,sans-serif'});
+  regions = text(name,300,104,440,32,{maxLines:1}) + text(headline,300,555,440,34,{maxLines:2}) + text(message,300,642,430,22,{maxLines:3}) + text(sender,300,736,430,18,{maxLines:1});
+ } else if (d.composition === 'disco-cat' || d.composition === 'catnap') {
   art = (animate ? catMotion : '') + (d.composition === 'disco-cat' ? discoCat() : catnapCake());
   regions = text(d.composition === 'disco-cat' ? 'THE BIRTHDAY MIX' : 'THE SLOW BIRTHDAY CLUB',300,72,450,14,{family:'Arial,sans-serif',weight:700}) + text(headline,300,128,460,43,{maxLines:2,weight:700}) + text(name,300,558,455,29,{maxLines:1}) + text(message,300,613,440,23,{maxLines:4}) + text(sender,300,737,440,18,{family:'Arial,sans-serif',maxLines:1});
  } else if (d.composition === 'type') {

@@ -1,5 +1,9 @@
 # Account and password recovery
 
+Current private-file implementation: see [user file Storage](user-file-storage.md).
+It supersedes the older pending `avatars` bucket proposal below with validated
+Edge Function uploads into `user-uploads`. Remote rollout is still pending.
+
 `/account/` requires a verified Supabase Auth user. Guests receive a sign-in link
 that returns to Account after login. A user can edit their display name, view their
 Auth email, creation date and database role, change their password, open My Cards

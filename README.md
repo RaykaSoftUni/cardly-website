@@ -47,9 +47,10 @@ and available, with editable text, brief animations, an editor replay control an
 static reduced-motion rendering. The demo collection guide documents their seed command.
 Disco whiskers also appears first in the homepage inspiration row.
 The [Account guide](docs/account.md) covers `/account/`, profile editing, password
-change and recovery, local logout, and Auth email configuration. Avatar support is
-implemented behind a capability check; its Storage/validation migration is prepared
-but unapplied while the management connector cannot refresh OAuth. Existing profile
+change and recovery, local logout, and Auth email configuration. Avatar and private draft-photo support are
+implemented behind a capability check; their unified Storage migration and Edge
+Functions are prepared but not remotely applied/deployed. See
+[private user files](docs/user-file-storage.md) for rollout and cross-user tests. Existing profile
 ownership and column restrictions remain in force.
 
 ## Production verification

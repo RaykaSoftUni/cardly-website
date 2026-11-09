@@ -311,3 +311,6 @@ body[data-page-loading='true'] .page-main { min-height: calc(100svh - 92px); }
 .pricing-explainer { max-width: 70ch; }
 .pricing-planned { max-width: 70ch; padding-left: 1.25rem; }
 @media (max-width: 767px) { .pricing-options { grid-template-columns: 1fr; } }
+
+.draft-photo-selection { display: block; max-width: 100%; width: 240px; height: 180px; object-fit: cover; border-radius: var(--radius-sm); margin-block: var(--space-4); }
+.draft-photo-selection[hidden] { display: none; }

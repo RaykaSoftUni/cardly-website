@@ -28,6 +28,12 @@ async function mockAccount(page) {
     }
     return route.fulfill({ json: state.profile });
   });
+  await page.route('**/functions/v1/user-file-upload', async route => {
+    const body=route.request().postData()||'';
+    if(body.includes('name="action"')&&body.includes('remove'))state.profile.avatar_url=null;
+    else {state.profile.avatar_url=adminId+'/avatars/'+crypto.randomUUID()+'.png';state.uploads.push(state.profile.avatar_url);}
+    return route.fulfill({json:{path:state.profile.avatar_url,cleanupFailed:false}});
+  });
   await page.route('**/auth/v1/logout*', route => route.fulfill({ status: 204 }));
   return state;
 }
@@ -133,7 +139,7 @@ test('avatar validates, previews, uploads unique own paths, replaces and confirm
   await page.getByRole('button', { name: 'Save profile image', exact: true }).click();
   await expect(page.locator('main')).toContainText('Profile image saved.');
   const oldPath = state.profile.avatar_url;
-  expect(oldPath).toMatch(new RegExp(`^${adminId}/[a-f0-9-]+\\.png$`));
+  expect(oldPath).toMatch(new RegExp(`^${adminId}/avatars/[a-f0-9-]+\\.png$`));
   await file.setInputFiles({ name: 'photo.png', mimeType: 'image/png', buffer: png });
   await page.getByRole('button', { name: 'Save profile image', exact: true }).click();
   await expect.poll(() => state.profile.avatar_url).not.toBe(oldPath);

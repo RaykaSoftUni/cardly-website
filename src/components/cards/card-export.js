@@ -23,7 +23,7 @@ export function createCardExport({ getInput, title }) {
     try {
       const input = await getInput();
       if (!input) { if (attempt === revision) feedback.textContent = 'Complete the required fields before generating.'; return; }
-      const blob = await renderCardPng(input.key, input.values, input.layout);
+      const blob = await renderCardPng(input.key, input.values, input.layout, input.photoData);
       if (attempt !== revision) return;
       url = URL.createObjectURL(blob);
       download.href = url;

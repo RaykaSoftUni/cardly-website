@@ -15,9 +15,10 @@ use the deterministic unanimated artwork in PNG. Preview and export share system
 font stacks, so font appearance can vary between operating systems.
 
 Only supported fields appear in the image, including name, age where used,
-message, sender, and the design's original artwork. Photo uploads and AI images
-are not supported by current templates. Snapshot layouts requiring additional
-assets or photos are rejected. Custom templates require their own compatible
+message, sender, and the design's original artwork. Private photos have a prepared `photo-keepsake` renderer and authenticated upload
+pipeline; remote rollout is pending. See [private user files](user-file-storage.md).
+AI images remain unsupported. Other snapshot layouts requiring additional
+assets are rejected. Custom templates require their own compatible
 renderer before export. No upload pipeline, AI integration, or image storage was
 introduced.
 

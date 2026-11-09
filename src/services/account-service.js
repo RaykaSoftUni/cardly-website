@@ -1,9 +1,9 @@
+import { privateImageBlob, uploadUserImage, removeUserImage, validateUserImage } from './user-files.js';
 import { supabaseClient as client, authCallbackError } from './supabase-client.js';
 
 export const passwordRequirements = 'Use 8–128 characters. Additional password strength requirements may apply.';
 export const recoveryFailed = authCallbackError;
 export const avatarLimit = 2 * 1024 * 1024;
-const formats = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 
 export function accountError(error) {
   if (error?.code === 'validation') return error.message;
@@ -58,53 +58,14 @@ export function watchSignOut(callback) {
   const { data } = client.auth.onAuthStateChange(event => { if (event === 'SIGNED_OUT') queueMicrotask(callback); });
   return () => data.subscription.unsubscribe();
 }
-function ownedAvatar(path, user) {
-  return typeof path === 'string' && new RegExp(`^${user.id}/[a-f0-9-]{36}\\.(png|jpg|webp)$`).test(path);
-}
 export async function avatarPreview(path) {
-  if (!path) return null;
-  const user = await requireUser();
-  if (!ownedAvatar(path, user)) return null;
-  return URL.createObjectURL(checked(await client.storage.from('avatars').download(path)));
+  if(!path)return null;
+  return URL.createObjectURL(await privateImageBlob(path));
 }
 export async function avatarsAvailable() {
-  // The capability appears only after the private bucket/policies are migrated.
-  // Existing profile and password management remain usable during rollout.
   try { const { data, error } = await client.rpc('account_avatar_available'); return !error && data === true; }
   catch { return false; }
 }
-export async function validateAvatar(file) {
-  if (!file || !formats[file.type]) throw invalid('Choose a JPEG, PNG or WebP image.');
-  if (!file.size || file.size > avatarLimit) throw invalid('Choose an image no larger than 2 MiB.');
-  const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
-  const signature = file.type === 'image/png' ? [137,80,78,71,13,10,26,10].every((b,i) => bytes[i] === b)
-    : file.type === 'image/jpeg' ? bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255
-    : String.fromCharCode(...bytes.slice(0,4)) === 'RIFF' && String.fromCharCode(...bytes.slice(8,12)) === 'WEBP';
-  if (!signature) throw invalid('The image contents do not match its format.');
-  let bitmap;
-  try { bitmap = await createImageBitmap(file); if (bitmap.width * bitmap.height > 16000000) throw new Error(); }
-  catch { throw invalid('Choose a valid image with at most 16 million pixels.'); }
-  finally { bitmap?.close(); }
-}
-export async function saveAvatar(file) {
-  await validateAvatar(file);
-  const user = await requireUser();
-  const { avatar_url: oldPath } = checked(await client.from('profiles').select('avatar_url').eq('id', user.id).single());
-  const path = `${user.id}/${crypto.randomUUID()}.${formats[file.type]}`;
-  checked(await client.storage.from('avatars').upload(path, file, { contentType: file.type, upsert: false }));
-  const result = await client.from('profiles').update({ avatar_url: path }).eq('id', user.id).select('avatar_url').single();
-  if (result.error) {
-    const cleanup = await client.storage.from('avatars').remove([path]);
-    if (cleanup.error) throw invalid('Your profile image was not updated. An unused upload could not be removed; please try again later.');
-    throw result.error;
-  }
-  const cleanup = oldPath && ownedAvatar(oldPath, user) ? await client.storage.from('avatars').remove([oldPath]) : null;
-  return { path, cleanupFailed: Boolean(cleanup?.error) };
-}
-export async function removeAvatar() {
-  const user = await requireUser();
-  const { avatar_url: path } = checked(await client.from('profiles').select('avatar_url').eq('id', user.id).single());
-  checked(await client.from('profiles').update({ avatar_url: null }).eq('id', user.id).select('avatar_url').single());
-  const cleanup = path && ownedAvatar(path, user) ? await client.storage.from('avatars').remove([path]) : null;
-  return { cleanupFailed: Boolean(cleanup?.error) };
-}
+export const validateAvatar=validateUserImage;
+export const saveAvatar=file=>uploadUserImage(file,{purpose:'avatar'});
+export const removeAvatar=()=>removeUserImage({purpose:'avatar'});

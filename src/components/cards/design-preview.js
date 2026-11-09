@@ -1,13 +1,13 @@
 import { el } from '../../utils/dom.js';
 import { renderCardSvg, designs } from '../../data/card-designs.js';
 import { button } from '../ui.js';
-export function createDesignPreview(key, values = {}, { controls = true } = {}) {
+export function createDesignPreview(key, values = {}, { controls = true, photoData = null } = {}) {
  const image = el('img', { className:'design-art', alt:'Personalized demo greeting card', width:600, height:800 });
  const root = el('div', { className:'design-preview' }, image);
  const motion = matchMedia('(prefers-reduced-motion: reduce)');
  let replay = 0;
  const render = () => {
-  image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(renderCardSvg(key,values,{animate:!motion.matches,replay:replay++}))}`;
+  image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(renderCardSvg(key,values,{animate:!motion.matches,replay:replay++,photoData}))}`;
   image.alt = `${values.recipient_name ? `For ${values.recipient_name}: ` : ''}${values.main_headline || designs[key]?.headline || 'Greeting card'} — demo preview`;
  };
  render();
@@ -20,7 +20,7 @@ export function createDesignPreview(key, values = {}, { controls = true } = {}) 
   window.addEventListener('pagehide',()=>motion.removeEventListener('change',sync),{once:true});
   if (replayButton) root.append(replayButton);
  }
- return { element:root, update(next) { values={...next}; render(); } };
+ return { element:root, setPhoto(next) { photoData=next; render(); }, update(next) { values={...next}; render(); } };
 }
 export function selectCardAsset(card, size='thumb') {
  return card.preview_assets?.find(a=>a.is_primary) || card.preview_assets?.find(a=>a.image_type===(size==='thumb'?'thumbnail':'preview')) || card.preview_assets?.find(a=>['preview','thumbnail'].includes(a.image_type));

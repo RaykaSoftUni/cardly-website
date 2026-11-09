@@ -71,7 +71,7 @@ async function avatarSection(profile) {
       selectionURL = URL.createObjectURL(avatar); display(selectionURL); form.setError('');
     } catch (error) { if (attempt === generation) { display(savedURL); form.setError(accountError(error)); } }
   }, onSubmit: async ({ avatar }) => {
-    feedback.textContent = '';
+    feedback.textContent = 'Uploading and validating your image…';
     remove.disabled = true;
     form.element.elements.avatar.disabled = true;
     try {

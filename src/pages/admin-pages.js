@@ -174,7 +174,7 @@ export async function renderAdminPage(main, pageId) {
     ], submitLabel: 'Save template revision', onSave: values => admin.saveAdminData('card_templates', { card_id: card.id, template_key: values.template_key, layout_config: json(values.layout_config), style_config: json(values.style_config, true) }, template?.id),
     success: async saved => { success(`Template saved at version ${saved.version}. Earlier versions remain intact.`); await editCard(); } });
     return section({ title: 'Card template', description: `Current version: ${template?.version || 'not configured'}. Configuration changes automatically create the next immutable version. Unchanged saves keep the current version.`, children: [el('section', { className: 'surface-panel' }, [form.element,
-      el('p', { className: 'field-hint' }, 'Image regions use catalog assets; user-photo personalization is not enabled. Demo artwork uses its predefined design key. A future renderer must interpret the saved configuration snapshots.')])] });
+      el('p', { className: 'field-hint' }, 'For private photos use the photo-keepsake design, photo_upload: true, a 600 × 800 canvas and an optional recipient_photo image field with empty configuration. Photo uploads require the private Storage service to be enabled. Other image regions use catalog assets.')])] });
   }
   function fieldsEditor(card, definitions) {
     const root = el('section', { className: 'page-section' });
@@ -185,7 +185,7 @@ export async function renderAdminPage(main, pageId) {
       const form = managedForm({ ...formOptions, fields: [
         { name: 'field_key', label: 'Field key', required: true, value: field?.field_key || '', maxLength: 64, hint: 'Lowercase letters, numbers and underscores; start with a letter. Unique within this card.' },
         { name: 'label', label: 'Field label', required: true, value: field?.label || '' },
-        { name: 'field_type', label: 'Field type', options: ['text', 'textarea', 'number', 'select'], value: field?.field_type || 'text' },
+        { name: 'field_type', label: 'Field type', options: ['text', 'textarea', 'number', 'select', 'image'], value: field?.field_type || 'text' },
         { name: 'placeholder', label: 'Placeholder', value: field?.placeholder || '' },
         { name: 'help_text', label: 'Field guidance', value: field?.help_text || '' },
         { name: 'is_required', label: 'Required', options: yesNo, value: String(field?.is_required ?? false) },
