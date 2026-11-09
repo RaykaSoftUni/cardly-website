@@ -6,7 +6,7 @@ Multi-page greeting card application with a fictional Supabase-backed catalog,
 server-side filters, distinct SVG designs, per-card personalization previews,
 password sign-in, owned drafts and generation placeholders. AI, photo uploads,
 payments, final image exports, sharing and registration UI remain
-unconnected. The 19 HTML entries retain shared components. See
+unconnected. The 20 HTML entries retain shared components. See
 [the design system guide](docs/design-system.md) for component interfaces.
 
 ## Requirements and setup
@@ -73,7 +73,7 @@ Committed SQL migrations are in `supabase/migrations/`.
 
 ## Structure
 
-- `pages/` contains all 19 HTML entries, including `pages/index.html` and
+- `pages/` contains all 20 HTML entries, including `pages/index.html` and
   nested public pages; `pages/admin/` contains the admin HTML entries.
 - `dist/` contains generated production files and is a sibling of `pages/`,
   `docs/`, `src/`, `scripts/`, and `supabase/`.
@@ -124,3 +124,7 @@ npm run test:ui
 Alternatively, set `CARDLY_CHROME_PATH` to an existing Chrome executable. The checks
 start their own production preview on port 4174; keep that port free. Playwright
 reports, screenshots and traces are ignored by Git.
+
+The public [FAQ](/faq/) explains current features and planned functionality without
+requiring authentication or a backend connection. Footer navigation links to its
+keyboard-operated disclosures; topic fragments such as `/faq/#privacy` open directly.

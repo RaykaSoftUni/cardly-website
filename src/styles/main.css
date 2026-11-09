@@ -286,3 +286,16 @@ body[data-page-loading='true'] .page-main { min-height: calc(100svh - 92px); }
 .account-avatar[hidden] { display: none; }
 .account-feedback { overflow-wrap: anywhere; margin-top: 1rem; }
 @media (max-width: 767px) { .account-layout { grid-template-columns: 1fr; } .account-metadata { grid-template-columns: 1fr; gap: .25rem; } .account-metadata dd { margin-bottom: .75rem; } }
+
+/* Public FAQ disclosures keep questions visible and answers at a readable width. */
+.faq-content { max-width: 52rem; margin-bottom: var(--space-8); }
+.faq-topics ul { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; list-style: none; padding: 0; margin-bottom: 0; }
+.faq-topics h2 { font-size: 1.25rem; }
+.faq-section h2 { scroll-margin-top: 7rem; }
+.faq-item { border-bottom: 1px solid var(--bs-border-color); }
+.faq-item h3 { margin: 0; font-size: 1.05rem; }
+.faq-question { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; border: 0; background: transparent; color: inherit; font: inherit; font-weight: 600; text-align: left; padding: 1.25rem .25rem; }
+.faq-question:focus-visible { outline: 3px solid var(--bs-primary); outline-offset: 3px; border-radius: .25rem; }
+.faq-indicator { flex-shrink: 0; font-size: 1.5rem; }
+.faq-question[aria-expanded='true'] .faq-indicator { transform: rotate(45deg); }
+.faq-answer { max-width: 68ch; padding: 0 .25rem .5rem; }

@@ -401,3 +401,18 @@ checks, Git setup, remote access, and external configuration honestly.
 At initial inspection, this workspace contained only AGENTS.md and was not a Git
 repository. There were no application commands, build tooling, or configured remote
 to verify. Repository setup is a future explicit action, not part of milestone 0.
+
+## Public FAQ — completed
+
+The explicit FAQ request authorizes `/faq/`, its separate HTML/module entry,
+shared footer link, ten topic groups and accessible button disclosures. Topic
+fragments support direct navigation and keyboard focus. Answers distinguish
+current browsing, guest personalization, private drafts and demo jobs from future
+AI, uploads, payments, final downloads and sharing. The page requires neither
+sign-in nor a Supabase request. No backend or payment behavior changed.
+
+Verification: all 20 production HTML entries build; production preview checks
+pass for routes, explicit HTML URLs, query strings, 30 assets and 404 behavior.
+All 15 FAQ/shared-design browser checks pass, covering keyboard Enter/Space,
+expanded/hidden state, fragment navigation, mobile overflow, backend-independent
+public access and automated WCAG A/AA checks with answers expanded.

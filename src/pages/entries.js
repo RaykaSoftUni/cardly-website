@@ -1,6 +1,7 @@
 // HTML paths are relative to pages/ in source and dist/ in production.
 // Public URLs stay independent of the source directory layout.
 export const pages = [
+  { id: "faq", url: "/faq/", label: "FAQ", html: "faq/index.html" },
   {
     "id": "home",
     "url": "/",
