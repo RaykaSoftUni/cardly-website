@@ -12,8 +12,8 @@ export function createHeader({ pageId, authenticated = false, isAdmin = false, o
   const menuId = uniqueId('site-menu');
   const nav = el('nav', { className: 'site-nav', id: menuId, 'aria-label': 'Main navigation' });
   const links = authenticated
-    ? [['Home', '/', 'home'], ['Cards', '/cards/', 'cards'], ['My Cards', '/my-cards/', 'my-cards'], ['Saved Cards', '/my-cards/?view=saved', 'saved-cards'], ['Account', '/account/', 'account']]
-    : [['Home', '/', 'home'], ['Cards', '/cards/', 'cards'], ['Login', '/login/', 'login'], ['Register', '/register/', 'register']];
+    ? [['Home', '/', 'home'], ['Cards', '/cards/', 'cards'], ['Pricing', '/pricing/', 'pricing'], ['My Cards', '/my-cards/', 'my-cards'], ['Saved Cards', '/my-cards/?view=saved', 'saved-cards'], ['Account', '/account/', 'account']]
+    : [['Home', '/', 'home'], ['Cards', '/cards/', 'cards'], ['Pricing', '/pricing/', 'pricing'], ['Login', '/login/', 'login'], ['Register', '/register/', 'register']];
   if (authenticated && isAdmin) links.push(['Admin', '/admin/', 'admin']);
   const list = el('ul', { className: 'navigation-list' });
   for (const [label, href, id] of links) list.append(el('li', {}, el('a', {

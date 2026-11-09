@@ -2,6 +2,7 @@ import { showPageLoading, finishPageLoading, pageLoadError } from './feedback/pa
 import { createHeader } from './layout/header.js';
 import { createFooter } from './layout/footer.js';
 import { mountToastContainer } from './feedback/toast.js';
+import { renderPricingPage } from '../pages/pricing-content.js';
 import { renderFaqPage } from '../pages/faq-content.js';
 import { renderDesignPage } from '../pages/design-pages.js';
 const connectedPages = new Set(['home', 'cards', 'category', 'categories', 'card', 'card-editor', 'card-preview', 'login', 'my-cards']);
@@ -24,6 +25,7 @@ export function initializePage(pageId) {
     import('../pages/catalog-pages.js').then(({ renderCatalogPage }) => renderCatalogPage(main, pageId)).catch(() => {
       pageLoadError(main, 'Cardly could not connect. Check the Supabase configuration and try again.');
     });
+  } else if (pageId === 'pricing') { renderPricingPage(main); finishPageLoading(main);
   } else if (pageId === 'faq') { renderFaqPage(main); finishPageLoading(main);
   } else { renderDesignPage(main, pageId); finishPageLoading(main); }
   document.querySelector('footer')?.remove();

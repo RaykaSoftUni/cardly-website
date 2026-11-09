@@ -30,7 +30,7 @@ test('public navigation and keyboard-operated mobile menu use document navigatio
   await page.keyboard.press('Enter');
   await expect(menu).toHaveAttribute('aria-expanded', 'true');
   const nav = page.getByRole('navigation', { name: 'Main navigation' });
-  await expect(nav.getByRole('link')).toHaveText(['Home', 'Cards', 'Login', 'Register']);
+  await expect(nav.getByRole('link')).toHaveText(['Home', 'Cards', 'Pricing', 'Login', 'Register']);
   await nav.getByRole('link', { name: 'Cards', exact: true }).focus();
   await page.keyboard.press('Escape');
   await expect(menu).toBeFocused();

@@ -416,3 +416,21 @@ pass for routes, explicit HTML URLs, query strings, 30 assets and 404 behavior.
 All 15 FAQ/shared-design browser checks pass, covering keyboard Enter/Space,
 expanded/hidden state, fragment navigation, mobile overflow, backend-independent
 public access and automated WCAG A/AA checks with answers expanded.
+
+## Public Pricing — completed
+
+The explicit Pricing request authorizes `/pricing/` and top navigation links for
+visitors and authenticated users. Shared surfaces, badges, buttons and typography
+present free and premium options side by side on desktop and stacked on mobile.
+Free cards link to available free catalogue results; premium designs link to the
+paid catalogue. No starting price is invented: premium EUR prices remain per-card
+in the catalogue. Paid personalization and purchases are unavailable. AI, uploads,
+final rendering, downloads and sharing are clearly labelled as future features;
+no checkout, payment flow or entitlement behavior was added.
+
+Verification: all 21 HTML entries build; production checks pass for all routes,
+explicit HTML URLs, query strings, 31 assets and 404 behavior. All 15 existing FAQ
+and shared-design browser checks pass. Both pricing browser checks pass, covering
+backend-independent access, active navigation, free/paid filter links, mobile menu,
+375/768/1440px overflow and automated WCAG A/AA scans. One initial test selector
+required correction to use the availability dropdown's accessible role.
