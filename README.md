@@ -5,7 +5,7 @@ Repository: [RaykaSoftUni/cardly-website](https://github.com/RaykaSoftUni/cardly
 Multi-page greeting card application with a fictional Supabase-backed catalog,
 server-side filters, distinct SVG designs, per-card personalization previews,
 password sign-in, owned drafts and generation placeholders. AI, photo uploads,
-payments, final image exports, sharing and registration UI remain
+payments, direct sharing and registration UI remain
 unconnected. The 21 HTML entries retain shared components. See
 [the design system guide](docs/design-system.md) for component interfaces.
 
@@ -132,3 +132,7 @@ keyboard-operated disclosures; topic fragments such as `/faq/#privacy` open dire
 The public `/pricing/` page is linked in the top navigation for visitors and
 signed-in users. It compares current free personalization with unavailable premium
 designs, links to catalogue filters and labels future features without checkout.
+
+Supported free designs now export high-resolution 1500 × 2000 PNGs locally. See
+[card exports](docs/card-export.md) for supported templates, snapshot behavior and
+verification. Browser export does not complete database generation jobs.

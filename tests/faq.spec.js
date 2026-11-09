@@ -37,7 +37,7 @@ test('FAQ topic links support direct loads, mobile layout and accessible expande
   await expect(page).toHaveURL('/faq/#downloads');
   await expect(page.getByRole('heading', { name: 'Downloads and sharing', exact: true })).toBeFocused();
   for (const button of await page.locator('.faq-question').all()) await button.click();
-  await expect(page.locator('#faq-downloads-1')).toContainText('Final card downloads are not available yet');
+  await expect(page.locator('#faq-downloads-1')).toContainText('Supported free designs export as high-resolution 1500 × 2000 PNG files');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
 });

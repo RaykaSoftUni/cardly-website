@@ -1,3 +1,5 @@
+import { createCardExport } from '../components/cards/card-export.js';
+import { validateExportDesign } from '../services/card-export.js';
 import { el } from '../utils/dom.js';
 import { button,section } from '../components/ui.js';
 import { createField,createForm } from '../components/forms/fields.js';
@@ -11,7 +13,7 @@ import { adminContext } from '../services/admin-service.js';
 import { publicAssetUrl } from '../services/media-service.js';
 import { showPageLoading, finishPageLoading } from '../components/feedback/page-loading.js';
 const intro=(title,description)=>el('div',{className:'page-intro'},[el('p',{className:'eyebrow'},'The fictional Cardly collection'),el('h1',{},title),el('p',{className:'lead muted'},description)]);
-const notice=()=>el('p',{className:'sample-notice'},'Demo collection · Original fictional designs. Generation saves a preview job; final image export is not connected.');
+const notice=()=>el('p',{className:'sample-notice'},'Demo collection · Original fictional designs. Supported free designs export as high-resolution PNGs in your browser. Saved demo jobs keep their server status.');
 const eligible=c=>c.is_available&&c.pricing_type==='free';
 const status=c=>priceAndAvailability({paid:c.pricing_type==='paid',price:c.price===null?undefined:Number(c.price),available:c.is_available,published:true});
 const params=()=>new URLSearchParams(location.search);
@@ -82,8 +84,16 @@ async function detail(main,pageId){
  let initial={};try{initial=JSON.parse(sessionStorage.getItem(savedKey)||'{}');}catch{}
  const preview=createDesignPreview(c.design_key,initial);
  const feedback=el('p',{role:'status','aria-live':'polite',className:'field-hint'});
- const change=values=>{const data=valuesFor(c,values);preview.update(data);try{sessionStorage.setItem(savedKey,JSON.stringify(data));}catch{}};
- const form=createForm({fields:definitions(c).map(f=>({...f,value:initial[f.name]??''})),submitLabel:'Validate demo preview',description:'Each design has its own supported fields. Preview your words here; no final image is exported.',onChange:change,onSubmit:values=>{change(values);feedback.textContent='Demo preview validated. Your words are ready; no image has been generated.';}});
+ let pngExport;
+ const change=values=>{pngExport?.invalidate();const data=valuesFor(c,values);preview.update(data);try{sessionStorage.setItem(savedKey,JSON.stringify(data));}catch{}};
+ const form=createForm({fields:definitions(c).map(f=>({...f,value:initial[f.name]??''})),submitLabel:'Validate demo preview',description:'Each design has its own supported fields. Preview your words, then generate a 1500 × 2000 PNG. Animated designs export as a still image.',onChange:change,onSubmit:values=>{change(values);feedback.textContent='Preview validated. Choose Generate PNG to create your download.';}});
+ pngExport=createCardExport({title:c.title,getInput:async()=>{
+  if(!form.validate())return null;
+  const current=await cardDetail(c.id);
+  if(!current||!eligible(current))throw new Error('This card is no longer available for free generation.');
+  if(current.design_key!==c.design_key)throw new Error('This design changed. Reload the editor before generating.');
+  return {key:c.design_key,values:valuesFor(c,form.values())};
+ }});
  const report=error=>{feedback.textContent=error.message;const field=c.personalization_fields.find(f=>error.message.includes(f.field_key));if(field)form.setErrors({[field.field_key]:error.message});};
  const save=button({label:'Save my draft',variant:'outline-primary',onClick:async()=>{
   if(!form.validate())return;
@@ -97,11 +107,11 @@ async function detail(main,pageId){
  const generate=button({label:'Save demo generation',variant:'outline-primary',onClick:async()=>{
   if(!form.validate())return;
   generate.disabled=true;
-  try{await rpc('update_card_draft',{p_draft_id:generate.dataset.draftId,p_personalization_data:valuesFor(c,form.values())});const result=await rpc('generate_card',{p_draft_id:generate.dataset.draftId,p_expected_price:0});feedback.textContent=result.status==='processing'?'Demo generation job saved. This is a text preview only; final image rendering is not connected.':'The price changed. Review the card before continuing.';}
+  try{await rpc('update_card_draft',{p_draft_id:generate.dataset.draftId,p_personalization_data:valuesFor(c,form.values())});const result=await rpc('generate_card',{p_draft_id:generate.dataset.draftId,p_expected_price:0});feedback.textContent=result.status==='processing'?'Demo generation job saved. You can generate a PNG locally; the server job remains processing.':'The price changed. Review the card before continuing.';}
   catch(error){report(error);}
   finally{generate.disabled=false;}
  }});generate.hidden=true;
- main.replaceChildren(back,intro(c.title,'Your words, in this design’s own layout.'),notice(),el('div',{className:'editor-layout'},[el('section',{className:'surface-panel'},[form.element,save,generate,feedback]),el('aside',{className:'preview-panel','aria-label':'Live card preview'},preview.element)]));
+ main.replaceChildren(back,intro(c.title,'Your words, in this design’s own layout.'),notice(),el('div',{className:'editor-layout'},[el('section',{className:'surface-panel'},[form.element,pngExport.element,save,generate,feedback]),el('aside',{className:'preview-panel','aria-label':'Live card preview'},preview.element)]));
 }
 async function login(main){
  const {data:{session}}=await supabaseClient.auth.getSession();
@@ -121,8 +131,18 @@ async function collection(main){
  const [generations,drafts]=await Promise.all([rpc('get_generated_cards'),supabaseClient.from('card_drafts').select('*').is('archived_at',null).order('updated_at',{ascending:false})]);
  if(drafts.error)throw drafts.error;
  const draftTiles=await Promise.all(drafts.data.map(async d=>{const c=await cardDetail(d.card_id);return el('article',{className:'surface-panel'},[el('h3',{},c?.title||'Saved draft'),el('p',{},`For ${d.personalization_data.recipient_name||'someone special'}`),button({label:'Reopen preview',href:link('/card-editor/',d.card_id,''),onClick:()=>sessionStorage.setItem(`cardly-demo-input:${d.card_id}`,JSON.stringify(d.personalization_data))})]);}));
- const generated=generations.map(g=>el('article',{className:'catalog-card'},[createDesignPreview(g.template_snapshot?.layout_config?.design_key,g.personalization_data).element,el('div',{className:'catalog-card-body'},[el('h3',{},g.card_snapshot.title),el('p',{},`Demo preview · template v${g.template_version} · ${g.status}`),el('p',{className:'muted small'},'Saved personalization snapshot. Final image export is not connected.')])]));
- main.replaceChildren(intro('Your little collection of joy.','Only your account’s drafts and generation previews are shown.'),notice(),section({title:'Saved drafts',children:[el('div',{className:'card-grid'},draftTiles.length?draftTiles:emptyState({title:'No saved drafts',description:'Personalize an available free card to start.'}))]}),section({title:'Demo generations',children:[el('div',{className:'card-grid'},generated.length?generated:emptyState({title:'No demo generations yet',description:'Save a draft to create a generation job.'}))]}));
+ const generated=generations.map(g=>{
+  const key=g.template_snapshot?.layout_config?.design_key;
+  const content=el('div',{className:'catalog-card-body'},[el('h3',{},g.card_snapshot.title),el('p',{},`Saved snapshot · template v${g.template_version} · server status: ${g.status}`)]);
+  let supported=g.card_snapshot.pricing_type==='free'&&g.status!=='failed';
+  try{validateExportDesign(key,g.template_snapshot?.layout_config);}catch{supported=false;}
+  if(supported){
+   const png=createCardExport({title:g.card_snapshot.title,getInput:async()=>({key,values:g.personalization_data,layout:g.template_snapshot.layout_config})});
+   content.append(el('p',{className:'muted small'},'Generate a local PNG from these saved words and this design. This does not complete the server job.'),png.element);
+  }else content.append(el('p',{className:'muted small'},'Local PNG export is unavailable for this snapshot.'));
+  return el('article',{className:'catalog-card'},[createDesignPreview(key,g.personalization_data).element,content]);
+ });
+ main.replaceChildren(intro('Your little collection of joy.','Only your account’s drafts and generation previews are shown.'),notice(),section({title:'Saved drafts',children:[el('div',{className:'card-grid'},draftTiles.length?draftTiles:emptyState({title:'No saved drafts',description:'Personalize an available free card to start.'}))]}),section({title:'Saved generation snapshots',children:[el('div',{className:'card-grid'},generated.length?generated:emptyState({title:'No demo generations yet',description:'Save a draft to create a generation job.'}))]}));
 }
 export async function renderCatalogPage(main,pageId){
  showPageLoading(main);

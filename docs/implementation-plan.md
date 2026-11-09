@@ -434,3 +434,30 @@ and shared-design browser checks pass. Both pricing browser checks pass, coverin
 backend-independent access, active navigation, free/paid filter links, mobile menu,
 375/768/1440px overflow and automated WCAG A/AA scans. One initial test selector
 required correction to use the availability dropdown's accessible role.
+
+## High-resolution browser PNG export — completed
+
+The explicit download/export request authorizes PNG generation for supported free
+personalized designs, including private saved generation snapshots. The editor
+rechecks current availability before local generation. The shared SVG renderer
+produces a fixed 1500 × 2000 PNG (3:4) without capturing UI or resizing a preview
+bitmap. Long text wraps and shrinks rather than being truncated; signatures stay
+in their bottom text region. Animated artwork exports as a deterministic still.
+Download Card appears only after successful generation and is invalidated on edits.
+Filenames contain a sanitized public design title and no private identity/message.
+
+Saved snapshots use their stored design key and personalization. This local export
+does not complete server jobs, upload outputs, or change database authorization.
+Unknown/custom layouts, incompatible aspect ratios and photo-dependent layouts
+require compatible rendering before export. AI imagery, uploads, JPG/PDF formats
+and a trusted server worker remain outside this implementation. See
+[card export](card-export.md) for the supported boundary and renderer-version limit.
+FAQ and Pricing content now reflect the implemented PNG downloads.
+
+Verification: all 21 entries build and production route/asset checks pass. All 27
+affected browser checks pass, including real PNG downloads and header dimensions,
+all 12 renderers, full long-text bounds, repeated deterministic encoding, failed
+encoding recovery, paid/unavailable rejection, owned snapshot export, responsive
+layout, reduced motion and accessibility. A downloaded personalized space card was
+visually inspected. The reduced-motion screenshot test now scrolls the image into
+view before taking either sample to avoid scroll-position rasterization changes.

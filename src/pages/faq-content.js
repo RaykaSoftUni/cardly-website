@@ -13,7 +13,7 @@ const sections = [
   ]],
   ['personalization', 'Personalization', [
     ['What can I personalize?', 'The selected card determines the fields you can edit, such as recipient name, headline, message and sender name. Some forms also collect age, relationship, interests or tone; these do not currently generate AI text or images. Photo uploads are not connected.'],
-    ['Can I preview a card before generating it?', 'Yes. Available free cards support a live text preview, including guest personalization. This preview is not a finished downloadable image.'],
+    ['Can I preview a card before generating it?', 'Yes. Available free cards support a live text preview, including guest personalization. Choose Generate PNG to create a 1500 × 2000 image, then Download Card. Animated designs export as a still image.'],
     ['Can I change the message?', 'Yes. Edit the supported text fields and review the preview. AI message generation and regeneration are not available yet.'],
     ['Will every card look the same?', 'No. Cards use different illustrations, typography, layouts and personalization fields. Some designs include animation, with a still version for reduced-motion preferences.'],
   ]],
@@ -24,7 +24,7 @@ const sections = [
     ['Can I regenerate a message?', 'Not currently. Regeneration and any usage limits will be explained if that feature becomes available.'],
   ]],
   ['pricing', 'Free and paid cards', [
-    ['Are there free cards?', 'Yes. Available free cards can be personalized and previewed. Saving drafts and demo generation jobs requires signing in. Final image export is not connected.'],
+    ['Are there free cards?', 'Yes. Available free cards can be personalized and previewed. Saving drafts and demo generation jobs requires signing in. Supported designs can be generated and downloaded as PNGs in your browser.'],
     ['Why do some cards show a price?', 'Premium cards can display their intended price in EUR. A listed price does not mean the card can currently be purchased or used.'],
     ['Can I purchase paid cards now?', 'No. Payments are not implemented and paid cards remain unavailable. Future paid access will require verified purchase entitlement.'],
     ['What currency is used?', 'All card prices are displayed in EUR.'],
@@ -32,13 +32,13 @@ const sections = [
   ['accounts', 'Accounts and generated cards', [
     ['Do I need an account to create a card?', 'You can browse and try personalization without an account. Sign in to save private drafts, create demo generation jobs and view your collection. The registration screen is currently a placeholder.'],
     ['What can I access after logging in?', 'You can save and reopen your own drafts, view demo generation records in My Cards, and manage your account details. Favorites are not connected.'],
-    ['What is a demo generation?', 'It is a saved snapshot of your personalization and template, with a generation status. Final image rendering is not connected, so a saved job or preview does not mean a finished image is ready.'],
+    ['What is a demo generation?', 'It is a saved snapshot of your personalization and template, with a generation status. A saved job keeps its server status. For supported free snapshots, choose Generate PNG to render a local file, then Download Card. This does not complete the server job.'],
     ['Can other users see my cards?', 'Your private drafts and generation records are restricted to your account. Public sharing links are not implemented.'],
   ]],
   ['downloads', 'Downloads and sharing', [
-    ['What download formats are available?', 'Final card downloads are not available yet. PNG, JPG or PDF export may be added later; no export format is currently promised.'],
-    ['Can I send a card by email or messaging apps?', 'Cardly does not currently provide downloadable final cards, public sharing links or direct sending. Once downloads are supported, you could share the file through your preferred app.'],
-    ['Can I print a card?', 'There is currently no final downloadable file or printing service. Future downloadable files may be printable depending on format and resolution.'],
+    ['What download formats are available?', 'Supported free designs export as high-resolution 1500 × 2000 PNG files. JPG and PDF export are not available. Animated cards export as a still image.'],
+    ['Can I send a card by email or messaging apps?', 'Download the PNG and share it using your preferred email or messaging app. Cardly does not provide public sharing links or direct sending.'],
+    ['Can I print a card?', 'The 1500 × 2000 PNG is designed for digital sharing. You may print it yourself; print quality depends on the chosen print size. Cardly has no printing or shipping service.'],
   ]],
   ['images', 'Images and uploads', [
     ['Can I upload my own photo?', 'Personalization photo uploads are not connected. Current designs use their existing artwork.'],
@@ -51,8 +51,8 @@ const sections = [
     ['Can an administrator see my password?', 'No. The administrator tools do not expose user passwords.'],
   ]],
   ['support', 'Problems and support', [
-    ['Why can’t I generate a card?', 'The card may be unavailable or unpublished, required fields may be missing, or you may need to sign in. Even a saved demo job cannot produce a final image yet because rendering is not connected. Check the message shown beside the action.'],
-    ['What happens if generation fails?', 'Check the displayed error or job status. An unfinished or failed demo job is not a completed card. Correct any missing details and retry where the interface allows it.'],
+    ['Why can’t I generate a card?', 'The card may be unavailable or unpublished, required fields may be missing, or you may need to sign in. Local PNG generation supports the known free designs; other templates require a compatible renderer. Check the message shown beside the action.'],
+    ['What happens if generation fails?', 'Check the displayed error or job status. A Download Card link appears only after local PNG generation succeeds. An unfinished or failed server job is not a completed server render. Correct any missing details and retry where the interface allows it.'],
     ['How can I get support?', 'A public support contact or contact form is not available yet. There are no support email addresses or direct delivery services listed on Cardly.'],
   ]],
 ];

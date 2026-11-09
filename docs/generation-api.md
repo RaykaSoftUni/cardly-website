@@ -179,3 +179,10 @@ RLS predicates. These notices remain; they are not a claim that the advisor is
 clear. Remaining performance findings are informational unused indexes.
 
 Reference: [Supabase database function security](https://supabase.com/docs/guides/database/functions).
+
+## Browser PNG export
+
+The separate [browser exporter](card-export.md) now generates local PNG files for
+supported free designs and owned free snapshots. It neither uploads outputs nor
+invokes `finish_card_generation`. Processing database jobs keep their existing
+status. A local download is not evidence of trusted worker completion.

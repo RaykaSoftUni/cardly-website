@@ -67,7 +67,7 @@ test('per-card personalization validates safely and retains input across errors'
  await expect(page.getByRole('spinbutton',{name:'Age Optional'})).toBeVisible();
  await expect(page.getByLabel('Favourite adventures')).toBeVisible();
  await page.getByRole('button',{name:'Validate demo preview'}).click();
- await expect(page.locator('main')).toContainText('Demo preview validated.');
+ await expect(page.locator('main')).toContainText('Preview validated.');
  const svg=await page.locator('.design-preview img').getAttribute('src');
  expect(decodeURIComponent(svg)).toContain('&lt;img');
  await expect(page.locator('.design-preview script')).toHaveCount(0);

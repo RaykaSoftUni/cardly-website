@@ -51,9 +51,10 @@ for (const card of cats) {
   await expect(page.getByRole('button',{name:'Replay animation',exact:true})).toBeHidden();
   const image=page.locator('.design-preview img');
   await expect.poll(()=>image.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
-  const first=await image.screenshot();
+  await image.scrollIntoViewIfNeeded();
+  const first=await image.screenshot({path:test.info().outputPath('still-first.png')});
   await page.waitForTimeout(350);
-  expect(first.equals(await image.screenshot()),'Reduced-motion artwork should stay still').toBe(true);
+  expect(first.equals(await image.screenshot({path:test.info().outputPath('still-next.png')})),'Reduced-motion artwork should stay still').toBe(true);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21aa']).analyze();
   expect(audit.violations).toEqual([]);
